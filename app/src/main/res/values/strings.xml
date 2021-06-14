@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">RiderRemake</string>
+
+
+    <!-- TODO: Remove or change this placeholder text -->
+
+
+    <string name="sign_up">Sign Up!</string>
+
+    <string name="fill">Please fill your details below to complete your account </string>
+
+    <string name="first_name">First Name</string>
+
+    <string name="last_name">Last name</string>
+
+    <string name="sign_up_button">Sign Up</string>
+
+    <string name="email">Email</string>
+
+    <string name="password">Password</string>
+
+    <string name="confirm_password">Confirm Password</string>
+
+    <string name="login">Login</string>
+
+    <string name="phone">Phone</string>
+    <string name="title_activity_test">Test</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="welcome">welcome</string>
+    <string name="layout_choose_saved_place">choose a saved place</string>
+    <string name="where_to">Where to?</string>
+    <string name="title_activity_request_driver">Map</string>
+    <string name="pay_by_cash">Pay by Cash</string>
+    <string name="confirm_uber">Confirm</string>
+    <string name="confirm_pickup_spot">Confirm Pickup Spot</string>
+    <string name="address_demo">Fayoum</string>
+    <string name="find_your_ride">Finding your ride</string>
+    <string name="drivers_not_found">Drivers Not Found</string>
+    <string name="token_not_found">Token not_Found</string>
+    <string name="request_driver_failed">Failed to send Request to Driver</string>
+    <string name="permission_require">Permission Require</string>
+    <string name="title_activity_request_mechanicand_winch_driver">Map</string>
+    <string name="no_driver_accept_request">No Driver Accept Aequest</string>
+
+
+</resources>

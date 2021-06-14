@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txt_destination"
+        android:paddingRight="@dimen/_16sdp"
+        android:paddingLeft="@dimen/_16sdp"
+        android:paddingBottom="@dimen/_8sdp"
+        android:paddingTop="@dimen/_8sdp"
+        android:background="@drawable/pickup_round_center"
+        android:textColor="@android:color/white"
+      android:layout_marginLeft="@dimen/_20sdp"
+        android:layout_gravity="center_vertical"
+        android:text="Meet Driver Here"/>
+    <View
+        android:layout_width="@dimen/_1sdp"
+        android:layout_height="@dimen/_2sdp"
+        android:layout_gravity="center_horizontal"
+        android:background="#2c6ff2"/>
+    <ImageView
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_20sdp"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/pickup_icon"/>
+
+
+</LinearLayout>
