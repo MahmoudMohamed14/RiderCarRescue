@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.example.riderremake.Common;
 import com.example.riderremake.DriverGeomodel;
+import com.example.riderremake.EventBus.SelectPlaceEvent;
 import com.example.riderremake.FCMResponse;
 import com.example.riderremake.R;
 import com.example.riderremake.RequestDriverActivity;
@@ -58,6 +59,7 @@ public class UserUtils {
         CompositeDisposable compositeDisposable=new CompositeDisposable();
         IFCMService ifcmService= RetrofitFCMClient.getInstance().create(IFCMService.class);
         //get token
+        SelectPlaceEvent selectPlaceEvent=new SelectPlaceEvent();
         FirebaseDatabase.getInstance().getReference(Common.TOKEN_REFRANCE).child(foundDriver.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -67,6 +69,7 @@ public class UserUtils {
                     notification.put(Common.NOTI_TITLE,Common.REQUEST_DRIVER_TITLE);
                     notification.put(Common.NOTI_CONTANT,"This message respersent for request driver action ");
                     notification.put(Common.RiDER_KEY,FirebaseAuth.getInstance().getCurrentUser().getUid());
+                    notification.put("TYPE_CAR",selectPlaceEvent.getCar());
                     notification.put(Common.RIDER_PICKUP_LOCATION,new StringBuilder("").append(target.latitude)
                     .append(",").append(target.longitude).toString());
                     FCMSendData fcmSendData=new FCMSendData(tokenModel.getToken(),notification);
@@ -78,7 +81,9 @@ public class UserUtils {
                         public void accept(FCMResponse fcmResponse) throws Exception {
                             if(fcmResponse.getSuccess()==0){
                                 compositeDisposable.clear();
+
                                 Snackbar.make(main_layout,context.getString(R.string.request_driver_failed),Snackbar.LENGTH_LONG).show();
+
 
                             }
 

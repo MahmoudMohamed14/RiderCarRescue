@@ -146,8 +146,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
     LinearLayout linear_choose_service;
     @BindView(R.id.layout_choose_saved_place)
     LinearLayout linear_choose_place;
-
-
+    @BindView(R.id.liner_type_car)
+    LinearLayout liner_type_car ;
+    @BindView(R.id.edit_type_car)
+    EditText edit_type_car ;
     @OnClick(R.id.pickup_service)
     void onPickupService() {
 
@@ -166,9 +168,15 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
             @Override
             public void onSuccess(Location location) {
                 LatLng origin = new LatLng(location.getLatitude(), location.getLongitude());
+                String type_car=edit_type_car.getText().toString();
+                if (type_car.isEmpty()) {
+                    edit_type_car.setError("you must enter type your car ");
+                  edit_type_car.requestFocus();
+                    return;
+                }
 
                 startActivity(new Intent(getContext(), RequestMechanicandWinchDriver.class));
-                EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, "mahmoud"));
+                EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, type_car));
 
             }
         });
@@ -197,6 +205,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
         linear_choose_service.setVisibility(View.GONE);
         linear_choose_place.setVisibility(View.GONE);
         txt_welcome.setVisibility(View.VISIBLE);
+        liner_type_car.setVisibility(View.VISIBLE);
 
     }
     @OnClick(R.id.image_wnsh)
@@ -210,6 +219,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
         linear_choose_service.setVisibility(View.GONE);
         linear_choose_place.setVisibility(View.GONE);
         txt_welcome.setVisibility(View.VISIBLE);
+        liner_type_car.setVisibility(View.VISIBLE);
     }
 
 
@@ -1144,6 +1154,8 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                             Common.markerList.get(driverGeomodel.getKey()).remove();//remove marker
                         Common.markerList.remove(driverGeomodel.getKey());//remove marker info hash map
                         Common.driverLocationsSubscribe.remove(driverGeomodel.getKey());//remove driver info
+                        if(Common.driversFound!=null&&Common.driversFound.size()>0)//remove local info of driver
+                            Common.driversFound.remove(driverGeomodel.getKey());
                         driverLocation.removeEventListener(this);//remove event listener
                         //route from my location to search
                     }else{
@@ -1205,6 +1217,8 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                             Common.markerList.get(driverGeomodel.getKey()).remove();//remove marker
                         Common.markerList.remove(driverGeomodel.getKey());//remove marker info hash map
                         Common.driverLocationsSubscribe.remove(driverGeomodel.getKey());//remove driver info
+                        if(Common.driversFound!=null&&Common.driversFound.size()>0)//remove local info of driver
+                            Common.driversFound.remove(driverGeomodel.getKey());
                         driverLocation.removeEventListener(this);//remove event listener
                         //route from my location to search
                     }else{
@@ -1263,6 +1277,9 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                             Common.markerList.get(driverGeomodel.getKey()).remove();//remove marker
                         Common.markerList.remove(driverGeomodel.getKey());//remove marker info hash map
                         Common.driverLocationsSubscribe.remove(driverGeomodel.getKey());//remove driver info
+                        if(Common.driversFound!=null&&Common.driversFound.size()>0)//remove local info of driver
+                            Common.driversFound.remove(driverGeomodel.getKey());
+
                         driverLocation.removeEventListener(this);//remove event listener
                         //route from my location to search
                     }else{
@@ -1301,7 +1318,8 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
     private void moveMarkerAnimation(final String key, final AnimationModel animationModel, final Marker currentMarker, String from, String to) {
         if(!animationModel.isRun()){
            // Request Api
-            compositeDisposable.add(igoogleApi.getDirections("driving","less_driving",from,to,getString(R.string.google_api_key))
+            compositeDisposable.add(igoogleApi.getDirections("driving","less_driving",from,to,
+                    getActivity().getString(R.string.google_api_key))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Consumer<String>() {

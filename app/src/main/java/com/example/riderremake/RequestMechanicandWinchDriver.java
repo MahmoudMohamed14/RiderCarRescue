@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.riderremake.EventBus.DeclineRequestFromDriver;
 import com.example.riderremake.EventBus.SelectPlaceEvent;
 import com.example.riderremake.Services.UserUtils;
 import com.example.riderremake.remote.IgoogleApi;
@@ -75,6 +76,7 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
     @BindView(R.id.fill_maps)
     View fill_map;
     private Object Context;
+    private DriverGeomodel lastDriverCall;
 
     @OnClick(R.id.btn_confirm_uber)
     void onConfirmUber(){
@@ -138,10 +140,10 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
         findNearbyDriver(target);
     }
 
-    private void findNearbyDriver(LatLng target) {
+    private void  findNearbyDriver(LatLng target) {
         if(Common.driversFound.size()>0){
             float min_distance=0;//default min distance=0;
-            DriverGeomodel foundDriver= Common.driversFound.get(Common.driversFound.keySet().iterator().next());//default set first driver is it found
+            DriverGeomodel foundDriver= null;
             Location currentRiderLocation=new Location("");
             currentRiderLocation.setLatitude(target.latitude);
             currentRiderLocation.setLongitude(target.longitude);
@@ -152,26 +154,48 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
                 //compare 2 location
                 if(min_distance==0){
                     min_distance=driverLocation.distanceTo(currentRiderLocation);//first default min_distance
-                    foundDriver= Common.driversFound.get(key);
-                }else if (driverLocation.distanceTo(currentRiderLocation)<min_distance){
+                    if(!Common.driversFound.get(key).isDecline()){//if not decline before
+                        foundDriver= Common.driversFound.get(key);
+                        break;
+                    }else
+                        continue;
+                }
+                else if (driverLocation.distanceTo(currentRiderLocation)<min_distance){
                     //if have any driver smaller min_distance,just get it
                     min_distance=driverLocation.distanceTo(currentRiderLocation);//first default min_distance
-                    foundDriver= Common.driversFound.get(key);
+                    if(!Common.driversFound.get(key).isDecline()){//if not decline before
+                        foundDriver= Common.driversFound.get(key);
+                        break;
+                    }
+                    else
+                        continue;
                 }
 
                 // Snackbar.make(main_layout,new StringBuilder("Found Driver: ").append(foundDriver.getDriverInfoModel().getPhone()),Snackbar.LENGTH_SHORT).show();
-
-                UserUtils.sendRequestToDriver(this,main_layout,foundDriver,target);
-
             }
 
+            if(foundDriver!=null){
+                UserUtils.sendRequestToDriver(this,main_layout,foundDriver,target);
+
+                lastDriverCall=foundDriver;
+            }
+            else {
+                Snackbar.make(main_layout,getString(R.string.no_driver_accept_request),Snackbar.LENGTH_SHORT).show();
+                lastDriverCall=null;
+                finish();
+            }
 
         }
+
         else {
             //not found
             Snackbar.make(main_layout,getString(R.string.drivers_not_found),Snackbar.LENGTH_SHORT).show();
+            lastDriverCall=null;
+            finish();
         }
     }
+
+
 
     @Override
     protected void onDestroy() {
@@ -207,7 +231,8 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
     @Override
     protected void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
+        if(! EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
     }
     @Override
     protected void onStop() {
@@ -216,6 +241,9 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
 
         if(EventBus.getDefault().hasSubscriberForEvent(SelectPlaceEvent.class))
             EventBus.getDefault().removeStickyEvent(SelectPlaceEvent.class);
+
+        if(EventBus.getDefault().hasSubscriberForEvent(DeclineRequestFromDriver.class))
+            EventBus.getDefault().removeStickyEvent(DeclineRequestFromDriver.class);
         EventBus.getDefault().unregister(this);
 
 
@@ -223,6 +251,15 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
     @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
     public  void onSelectPlaceEvent(SelectPlaceEvent event){
         selectPlaceEvent=event;
+    }
+    @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
+    public  void onDeclineRequestEvent(DeclineRequestFromDriver event){
+        if(lastDriverCall!=null){
+            Common.driversFound.get(lastDriverCall.getKey()).setDecline(true);
+            //driver cancel request,find new driver
+            findNearbyDriver(selectPlaceEvent.getOrigin());
+        }
+
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {

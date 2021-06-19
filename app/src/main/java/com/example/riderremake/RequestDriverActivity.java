@@ -163,7 +163,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         findNearbyDriver(target);
     }
 
-    private void findNearbyDriver(LatLng target) {
+    private void  findNearbyDriver(LatLng target) {
         if(Common.driversFound.size()>0){
             float min_distance=0;//default min distance=0;
             DriverGeomodel foundDriver= null;
@@ -182,31 +182,34 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
                        break;
                    }else
                        continue;
-                }else if (driverLocation.distanceTo(currentRiderLocation)<min_distance){
+                }
+                else if (driverLocation.distanceTo(currentRiderLocation)<min_distance){
                     //if have any driver smaller min_distance,just get it
                     min_distance=driverLocation.distanceTo(currentRiderLocation);//first default min_distance
                     if(!Common.driversFound.get(key).isDecline()){//if not decline before
                         foundDriver= Common.driversFound.get(key);
                         break;
-                    }else
+                    }
+                    else
                         continue;
                 }
 
                // Snackbar.make(main_layout,new StringBuilder("Found Driver: ").append(foundDriver.getDriverInfoModel().getPhone()),Snackbar.LENGTH_SHORT).show();
-               
-
             }
+
             if(foundDriver!=null){
                 UserUtils.sendRequestToDriver(this,main_layout,foundDriver,target);
+
                 lastDriverCall=foundDriver;
-            }else {
+            }
+            else {
                 Snackbar.make(main_layout,getString(R.string.no_driver_accept_request),Snackbar.LENGTH_SHORT).show();
                 lastDriverCall=null;
                 finish();
             }
 
-
         }
+
         else {
             //not found
             Snackbar.make(main_layout,getString(R.string.drivers_not_found),Snackbar.LENGTH_SHORT).show();
@@ -349,7 +352,10 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
 
     private void drawPath(SelectPlaceEvent selectPlaceEvent) {
         // Request Api
-        compositeDisposable.add(igoogleApi.getDirections("driving","less_driving",selectPlaceEvent.getOriginString(),selectPlaceEvent.getDestinationString(),getString(R.string.google_api_key))
+        compositeDisposable.add(igoogleApi.getDirections("driving","less_driving"
+                ,selectPlaceEvent.getOriginString()
+                ,selectPlaceEvent.getDestinationString()
+                ,getString(R.string.google_api_key))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<String>() {

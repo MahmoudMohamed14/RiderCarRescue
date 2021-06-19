@@ -5,7 +5,11 @@ import com.google.android.gms.maps.model.LatLng;
 public class SelectPlaceEvent {
     private LatLng origin,destination;
 
+    public SelectPlaceEvent() {
+    }
+
     private String car;
+
     public SelectPlaceEvent(LatLng origin, LatLng destination) {
         this.origin = origin;
         this.destination = destination;

@@ -146,18 +146,41 @@
                 android:src="@drawable/ic_baseline_add_24"
                 />
         </LinearLayout>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:visibility="gone"
+    android:id="@+id/liner_type_car"
+    >
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/_19sdp"
+        android:text="type car:"
+      android:layout_marginLeft="@dimen/_10sdp"
+        android:textColor="@color/black"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_40sdp"
+        android:hint="Enter type your car"
+        android:layout_marginRight="@dimen/_20sdp"
+        android:id="@+id/edit_type_car"
 
+        />
+
+</LinearLayout>
             <Button
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
                 android:id="@+id/pickup_service"
-                android:layout_marginTop="@dimen/_10sdp"
-                android:layout_marginLeft="@dimen/_30sdp"
-                android:layout_marginRight="@dimen/_30sdp"
+                android:layout_marginTop="@dimen/_6sdp"
+
+                android:layout_gravity="center"
                 android:text="Pickup Service"
-                android:backgroundTint="@color/white"
-                android:textColor="@color/black"
+                android:backgroundTint="@color/black"
+
 
                 android:textSize="@dimen/_20sdp"
                 />
