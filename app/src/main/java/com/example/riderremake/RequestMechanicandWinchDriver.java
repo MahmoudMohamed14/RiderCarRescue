@@ -103,24 +103,24 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
         confirm_pickup_layout.setVisibility(View.GONE);
         finding_your_ride_layout.setVisibility(View.VISIBLE);
         originMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker()).position(selectPlaceEvent.getOrigin()));
-        addplussatingEffect(selectPlaceEvent.getOrigin());
+        addplussatingEffect(selectPlaceEvent);
     }
 
-    private void addplussatingEffect(LatLng origin) {
+    private void addplussatingEffect(SelectPlaceEvent selectPlaceEvent) {
         if(lastplusAnimation!=null)lastplusAnimation.cancel();
-        if(lastusercircle!=null)lastusercircle.setCenter(origin);
+        if(lastusercircle!=null)lastusercircle.setCenter(selectPlaceEvent.getOrigin());
         lastplusAnimation= Common.valueAnimate(duration, animation->{
             if(lastusercircle!=null)lastusercircle.setRadius((float)animation.getAnimatedValue());
             else{
-                lastusercircle=mMap.addCircle(new CircleOptions().center(origin).radius((float)animation.getAnimatedValue())
+                lastusercircle=mMap.addCircle(new CircleOptions().center(selectPlaceEvent.getOrigin()).radius((float)animation.getAnimatedValue())
                         .strokeColor(Color.WHITE).fillColor(Color.parseColor("#33333333")));
             }
 
         });
-        startMapCameraSpinningAinmation(origin);
+        startMapCameraSpinningAinmation(selectPlaceEvent);
     }
 
-    private void startMapCameraSpinningAinmation(LatLng target) {
+    private void startMapCameraSpinningAinmation(SelectPlaceEvent selectPlaceEvent) {
         if(animator!=null)animator.cancel();
         animator=ValueAnimator.ofFloat(0,DESIRED_NUM_OF_SPINS*360);
         animator.setDuration(DESIRED_SECOND_PER_ONE_FULL_360_SPIN*DESIRED_NUM_OF_SPINS*1000);
@@ -128,7 +128,7 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
         animator.setStartDelay(100);
         animator.addUpdateListener(ValueAnimator->{
             float newBearingValue=(float)ValueAnimator.getAnimatedValue();
-            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(target)
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(selectPlaceEvent.getOrigin())
                     .tilt(45f)
                     .zoom(16f)
                     .bearing(newBearingValue)
@@ -137,16 +137,16 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
         });
         animator.start();
         //after start animation find driver
-        findNearbyDriver(target);
+        findNearbyDriver(selectPlaceEvent);
     }
 
-    private void  findNearbyDriver(LatLng target) {
+    private void  findNearbyDriver(SelectPlaceEvent selectPlaceEvent) {
         if(Common.driversFound.size()>0){
             float min_distance=0;//default min distance=0;
             DriverGeomodel foundDriver= null;
             Location currentRiderLocation=new Location("");
-            currentRiderLocation.setLatitude(target.latitude);
-            currentRiderLocation.setLongitude(target.longitude);
+            currentRiderLocation.setLatitude(selectPlaceEvent.getOrigin().latitude);
+            currentRiderLocation.setLongitude(selectPlaceEvent.getOrigin().longitude);
             for(String key:Common.driversFound.keySet()){
                 Location driverLocation=new Location("");
                 driverLocation.setLatitude(Common.driversFound.get(key).getGeoLocation().latitude);
@@ -175,7 +175,7 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
             }
 
             if(foundDriver!=null){
-                UserUtils.sendRequestToDriver(this,main_layout,foundDriver,target);
+                UserUtils.sendRequestToDriver(this,main_layout,foundDriver,selectPlaceEvent);
 
                 lastDriverCall=foundDriver;
             }
@@ -257,7 +257,7 @@ public class RequestMechanicandWinchDriver extends FragmentActivity implements O
         if(lastDriverCall!=null){
             Common.driversFound.get(lastDriverCall.getKey()).setDecline(true);
             //driver cancel request,find new driver
-            findNearbyDriver(selectPlaceEvent.getOrigin());
+            findNearbyDriver(selectPlaceEvent);
         }
 
     }

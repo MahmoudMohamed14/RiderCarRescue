@@ -20,7 +20,7 @@
             android:weightSum="6"
             android:background="@android:color/white">
             <LinearLayout
-                android:layout_width="@dimen/_25sdp"
+                android:layout_width="@dimen/_50sdp"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:padding="4dp"
@@ -28,7 +28,7 @@
                 android:background="@android:color/black"
                 >
                 <TextView
-                    android:layout_width="@dimen/_30sdp"
+                    android:layout_width="@dimen/_40sdp"
                     android:layout_height="wrap_content"
                     android:id="@+id/tex_time"
                     android:text="S\nMIN"

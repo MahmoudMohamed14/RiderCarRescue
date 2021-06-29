@@ -126,7 +126,7 @@ import io.reactivex.rxjava3.internal.schedulers.SingleScheduler;
 import io.reactivex.schedulers.Schedulers;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback, IfirebaseFialedListener, IfirebaseDriverInfoListener {
-
+private int pointer;
     //search
     @BindView(R.id.activity_main)
     SlidingUpPanelLayout slidingUpPanelLayout;
@@ -155,13 +155,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
 
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
             return;
         }
         mfusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
@@ -174,9 +168,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
                   edit_type_car.requestFocus();
                     return;
                 }
+                if(pointer==3){
+                    startActivity(new Intent(getContext(), RequestDriverActivity.class));
 
-                startActivity(new Intent(getContext(), RequestMechanicandWinchDriver.class));
-                EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, type_car));
+                    EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, type_car,pointer));
+
+                }
+
 
             }
         });
@@ -193,6 +191,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
         buildLocationCallbackDrivers();
         updateLocation();
         loadAvailableDrivers();
+        pointer=1;
     }
     @OnClick(R.id.image_mechanic)
     void onClickMechanic(){
@@ -206,20 +205,22 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
         linear_choose_place.setVisibility(View.GONE);
         txt_welcome.setVisibility(View.VISIBLE);
         liner_type_car.setVisibility(View.VISIBLE);
+        pointer=3;
 
     }
     @OnClick(R.id.image_wnsh)
     void onClickWinch(){
-        buildLocationRequest();
-        buildLocationCallbackWinch();
-        updateLocation();
-        loadAvailableWinch();
-        main_search.setVisibility(View.GONE);
-        btn_pickup_service.setVisibility(View.VISIBLE);
+        btn_pickup_service.setVisibility(View.GONE);
+        main_search.setVisibility(View.VISIBLE);
         linear_choose_service.setVisibility(View.GONE);
         linear_choose_place.setVisibility(View.GONE);
         txt_welcome.setVisibility(View.VISIBLE);
         liner_type_car.setVisibility(View.VISIBLE);
+        buildLocationRequest();
+        buildLocationCallbackWinch();
+        updateLocation();
+        loadAvailableWinch();
+        pointer=2;
     }
 
 
@@ -361,7 +362,19 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Ifireb
                         LatLng origin =new LatLng(location.getLatitude(),location.getLongitude());
                         LatLng destination =new LatLng(place.getLatLng().latitude,place.getLatLng().longitude);
                         startActivity(new Intent(getContext(), RequestDriverActivity.class));
-                        EventBus.getDefault().postSticky(new SelectPlaceEvent(origin,destination));
+                        if(pointer==1) {
+
+                            EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, destination,pointer));
+                        } else if (pointer==2) {
+                            String type_car=edit_type_car.getText().toString();
+                            if (type_car.isEmpty()) {
+                                edit_type_car.setError("you must enter type your car ");
+                                edit_type_car.requestFocus();
+                                return;
+                            }
+
+                                EventBus.getDefault().postSticky(new SelectPlaceEvent(origin,destination, type_car,pointer));
+                        }
 
                     }
                 });

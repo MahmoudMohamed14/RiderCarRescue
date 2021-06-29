@@ -126,24 +126,24 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         confirm_pickup_layout.setVisibility(View.GONE);
         finding_your_ride_layout.setVisibility(View.VISIBLE);
         originMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker()).position(selectPlaceEvent.getOrigin()));
-        addplussatingEffect(selectPlaceEvent.getOrigin());
+        addplussatingEffect(selectPlaceEvent);
     }
 
-    private void addplussatingEffect(LatLng origin) {
+    private void addplussatingEffect(SelectPlaceEvent selectPlaceEvent) {
         if(lastplusAnimation!=null)lastplusAnimation.cancel();
-        if(lastusercircle!=null)lastusercircle.setCenter(origin);
+        if(lastusercircle!=null)lastusercircle.setCenter(selectPlaceEvent.getOrigin());
         lastplusAnimation= Common.valueAnimate(duration, animation->{
             if(lastusercircle!=null)lastusercircle.setRadius((float)animation.getAnimatedValue());
             else{
-                lastusercircle=mMap.addCircle(new CircleOptions().center(origin).radius((float)animation.getAnimatedValue())
+                lastusercircle=mMap.addCircle(new CircleOptions().center(selectPlaceEvent.getOrigin()).radius((float)animation.getAnimatedValue())
                 .strokeColor(Color.WHITE).fillColor(Color.parseColor("#33333333")));
             }
 
         });
-        startMapCameraSpinningAinmation(origin);
+        startMapCameraSpinningAinmation(selectPlaceEvent);
     }
 
-    private void startMapCameraSpinningAinmation(LatLng target) {
+    private void startMapCameraSpinningAinmation(SelectPlaceEvent selectPlaceEvent) {
         if(animator!=null)animator.cancel();
         animator=ValueAnimator.ofFloat(0,DESIRED_NUM_OF_SPINS*360);
         animator.setDuration(DESIRED_SECOND_PER_ONE_FULL_360_SPIN*DESIRED_NUM_OF_SPINS*1000);
@@ -151,7 +151,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         animator.setStartDelay(100);
         animator.addUpdateListener(ValueAnimator->{
             float newBearingValue=(float)ValueAnimator.getAnimatedValue();
-            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(target)
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(selectPlaceEvent.getOrigin())
             .tilt(45f)
             .zoom(16f)
             .bearing(newBearingValue)
@@ -160,16 +160,16 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         });
         animator.start();
         //after start animation find driver
-        findNearbyDriver(target);
+        findNearbyDriver(selectPlaceEvent);
     }
 
-    private void  findNearbyDriver(LatLng target) {
+    private void  findNearbyDriver(SelectPlaceEvent selectPlaceEvent) {
         if(Common.driversFound.size()>0){
             float min_distance=0;//default min distance=0;
             DriverGeomodel foundDriver= null;
             Location currentRiderLocation=new Location("");
-            currentRiderLocation.setLatitude(target.latitude);
-            currentRiderLocation.setLongitude(target.longitude);
+            currentRiderLocation.setLatitude(selectPlaceEvent.getOrigin().latitude);
+            currentRiderLocation.setLongitude(selectPlaceEvent.getOrigin().longitude);
             for(String key:Common.driversFound.keySet()){
                 Location driverLocation=new Location("");
                 driverLocation.setLatitude(Common.driversFound.get(key).getGeoLocation().latitude);
@@ -194,11 +194,11 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
                         continue;
                 }
 
-               // Snackbar.make(main_layout,new StringBuilder("Found Driver: ").append(foundDriver.getDriverInfoModel().getPhone()),Snackbar.LENGTH_SHORT).show();
+
             }
 
             if(foundDriver!=null){
-                UserUtils.sendRequestToDriver(this,main_layout,foundDriver,target);
+                UserUtils.sendRequestToDriver(this,main_layout,foundDriver,selectPlaceEvent);
 
                 lastDriverCall=foundDriver;
             }
@@ -236,7 +236,11 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
 
     private Marker originMarker ,destinationMarker;
     private void setDatapickup() {
-        txt_address_pickup.setText(tex_origin!=null?tex_origin.getText():"None");
+        if(selectPlaceEvent.getPointer()==1||selectPlaceEvent.getPointer()==2) {
+            txt_address_pickup.setText(tex_origin != null ? tex_origin.getText() : "None");
+        }else if(selectPlaceEvent.getPointer()==3){
+            txt_address_pickup.setText(selectPlaceEvent.getCar()!=null?selectPlaceEvent.getCar():"None");
+        }
         mMap.clear();//clear on all map
         addpickermarker();
 
@@ -282,7 +286,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         if(lastDriverCall!=null){
             Common.driversFound.get(lastDriverCall.getKey()).setDecline(true);
             //driver cancel request,find new driver
-            findNearbyDriver(selectPlaceEvent.getOrigin());
+            findNearbyDriver(selectPlaceEvent);
         }
 
     }
@@ -307,37 +311,16 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-//
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-//                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//
-//            return;
-//        }
-//        mMap.setMyLocationEnabled(true);
-//        mMap.getUiSettings().setMyLocationButtonEnabled(true);
-//        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
-//            @Override
-//            public boolean onMyLocationButtonClick() {
-//                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(selectPlaceEvent.getOrigin(),19f));
-//
-//
-//
-//                return true;
-//            }
-//        });
-        drawPath(selectPlaceEvent);
 
+        if(selectPlaceEvent.getPointer()==1||selectPlaceEvent.getPointer()==2) {
+            drawPath(selectPlaceEvent);
 
-//
-//        //layoutbutton
-//        View locationbutton=((View)findViewById(Integer.parseInt("1")).getParent())
-//                .findViewById(Integer.parseInt("2"));
-//        RelativeLayout.LayoutParams params=( RelativeLayout.LayoutParams)locationbutton.getLayoutParams();
-//        //right button
-//        params.addRule(RelativeLayout.ALIGN_PARENT_TOP,0);
-//        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM,RelativeLayout.TRUE);
-//        params.setMargins(0,0,0,250);
-//        mMap.getUiSettings().setZoomControlsEnabled(true);
+        }else if(selectPlaceEvent.getPointer()==3){
+            confirm_pickup_layout.setVisibility(View.VISIBLE);//show layout pickup
+            confirm_uber_layout.setVisibility(View.GONE);//hide uber layout
+            setDatapickup();
+        }
+
         try {
             Boolean success=googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this,R.raw.uber_maps_style));
             if(!success){

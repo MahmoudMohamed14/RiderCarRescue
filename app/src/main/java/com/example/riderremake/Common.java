@@ -38,7 +38,10 @@ public class Common {
     public static final String RIDER_PICKUP_LOCATION ="PickupLocation" ;
     public static final String RiDER_KEY = "RiderKey";
     public static final String REQUEST_DRIVER_DECLINE="Decline" ;
-
+    public static final String RIDER_PICKUP_LOCATION_STRING = "PickupLocationString" ;
+    public static final String RIDER_DESTINATION_STRING ="DestinationLocationString" ;
+    public static final String RIDER_DESTINATION = "DestinationLocation";
+    public static final String TYPE_CAR="TYPE_CAR";
     public static Map<String,DriverGeomodel> driversFound=new HashMap<>();
     public  static  final  String  DRIVER__INFO="DriverInfo";
     public static HashMap<String, Marker> markerList=new HashMap<>();

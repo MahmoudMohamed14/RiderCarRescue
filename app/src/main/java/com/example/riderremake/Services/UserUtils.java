@@ -55,11 +55,11 @@ public class UserUtils {
         });
     }
 
-    public static void sendRequestToDriver(Context context, RelativeLayout main_layout, DriverGeomodel foundDriver, LatLng target) {
+    public static void sendRequestToDriver(Context context, RelativeLayout main_layout, DriverGeomodel foundDriver, SelectPlaceEvent selectPlaceEvent) {
         CompositeDisposable compositeDisposable=new CompositeDisposable();
         IFCMService ifcmService= RetrofitFCMClient.getInstance().create(IFCMService.class);
         //get token
-        SelectPlaceEvent selectPlaceEvent=new SelectPlaceEvent();
+
         FirebaseDatabase.getInstance().getReference(Common.TOKEN_REFRANCE).child(foundDriver.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -69,9 +69,21 @@ public class UserUtils {
                     notification.put(Common.NOTI_TITLE,Common.REQUEST_DRIVER_TITLE);
                     notification.put(Common.NOTI_CONTANT,"This message respersent for request driver action ");
                     notification.put(Common.RiDER_KEY,FirebaseAuth.getInstance().getCurrentUser().getUid());
-                    notification.put("TYPE_CAR",selectPlaceEvent.getCar());
-                    notification.put(Common.RIDER_PICKUP_LOCATION,new StringBuilder("").append(target.latitude)
-                    .append(",").append(target.longitude).toString());
+                    if (selectPlaceEvent.getCar()==null){
+                        selectPlaceEvent.setCar("0");
+                    }
+                    notification.put(Common.TYPE_CAR,selectPlaceEvent.getCar());
+
+                    notification.put(Common.RIDER_PICKUP_LOCATION,new StringBuilder("").append(selectPlaceEvent.getOrigin().latitude)
+                    .append(",").append(selectPlaceEvent.getOrigin().longitude).toString());
+                    if(selectPlaceEvent.getDestination()==null){
+                        selectPlaceEvent.setDestination(new LatLng(0.0,0.0));
+                    }
+
+                    notification.put(Common.RIDER_PICKUP_LOCATION_STRING,selectPlaceEvent.getOriginString());
+                    notification.put(Common.RIDER_DESTINATION_STRING,selectPlaceEvent.getDestinationString());
+                    notification.put(Common.RIDER_DESTINATION,new StringBuilder("").append(selectPlaceEvent.getDestination().latitude)
+                            .append(",").append(selectPlaceEvent.getDestination().longitude).toString());
                     FCMSendData fcmSendData=new FCMSendData(tokenModel.getToken(),notification);
                     compositeDisposable.add(ifcmService.sendNotification(fcmSendData)
                             .subscribeOn(Schedulers.newThread())

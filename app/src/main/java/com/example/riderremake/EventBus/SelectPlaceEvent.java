@@ -4,21 +4,38 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class SelectPlaceEvent {
     private LatLng origin,destination;
+    private String car;
+     private int pointer;
 
     public SelectPlaceEvent() {
     }
 
-    private String car;
 
-    public SelectPlaceEvent(LatLng origin, LatLng destination) {
+    public SelectPlaceEvent(LatLng origin, LatLng destination, int pointer) {
         this.origin = origin;
         this.destination = destination;
-
+        this.pointer = pointer;
     }
 
-    public SelectPlaceEvent(LatLng origin, String car) {
+    public SelectPlaceEvent(LatLng origin, String car, int pointer) {
         this.origin = origin;
         this.car = car;
+        this.pointer = pointer;
+    }
+
+    public SelectPlaceEvent(LatLng origin, LatLng destination, String car, int pointer) {
+        this.origin = origin;
+        this.destination = destination;
+        this.car = car;
+        this.pointer = pointer;
+    }
+
+    public int getPointer() {
+        return pointer;
+    }
+
+    public void setPointer(int pointer) {
+        this.pointer = pointer;
     }
 
     public String getCar() {
