@@ -51,6 +51,8 @@
     <string name="permission_require">Permission Require</string>
     <string name="title_activity_request_mechanicand_winch_driver">Map</string>
     <string name="no_driver_accept_request">No Driver Accept Aequest</string>
+    <string name="trip_not_found">Trip Not Found With Id</string>
+    <string name="ascii_dot">■</string>
 
 
 </resources>

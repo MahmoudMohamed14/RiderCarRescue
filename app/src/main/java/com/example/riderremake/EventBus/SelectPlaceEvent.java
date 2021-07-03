@@ -4,16 +4,22 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class SelectPlaceEvent {
     private LatLng origin,destination;
-    private String car;
+    private String car,adress;
      private int pointer;
 
-    public SelectPlaceEvent() {
+    public SelectPlaceEvent(LatLng origin, LatLng destination, String address, String type_car, int pointer) {
+        this.origin = origin;
+        this.destination = destination;
+        this.adress=address;
+        this.car = car;
+        this.pointer = pointer;
     }
 
 
-    public SelectPlaceEvent(LatLng origin, LatLng destination, int pointer) {
+    public SelectPlaceEvent(LatLng origin, LatLng destination,String address, int pointer) {
         this.origin = origin;
         this.destination = destination;
+        this.adress=address;
         this.pointer = pointer;
     }
 
@@ -23,11 +29,12 @@ public class SelectPlaceEvent {
         this.pointer = pointer;
     }
 
-    public SelectPlaceEvent(LatLng origin, LatLng destination, String car, int pointer) {
-        this.origin = origin;
-        this.destination = destination;
-        this.car = car;
-        this.pointer = pointer;
+    public String getAdress() {
+        return adress;
+    }
+
+    public void setAdress(String adress) {
+        this.adress = adress;
     }
 
     public int getPointer() {
@@ -54,7 +61,7 @@ public class SelectPlaceEvent {
         return destination;
     }
 
-    public String getOriginString() {
+    public String getDestinationString() {
         return new StringBuilder()
                 .append(destination.latitude)
                 .append(",")
@@ -66,7 +73,7 @@ public class SelectPlaceEvent {
         this.origin = origin;
     }
 
-    public String getDestinationString() {
+    public String getOriginString() {
         return new StringBuilder()
                 .append(origin.latitude)
                 .append(",")

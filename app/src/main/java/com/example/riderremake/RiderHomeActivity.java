@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.riderremake.EventBus.ShowNotificationFinishTrip;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -45,8 +46,13 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 @SuppressWarnings("unchecked")
@@ -64,6 +70,19 @@ public class RiderHomeActivity extends AppCompatActivity {
     private StorageReference mStorageRef;
     Uri uriprofile;
     AlertDialog waitdialog;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

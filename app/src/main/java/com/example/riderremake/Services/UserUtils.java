@@ -81,7 +81,7 @@ public class UserUtils {
                     }
 
                     notification.put(Common.RIDER_PICKUP_LOCATION_STRING,selectPlaceEvent.getOriginString());
-                    notification.put(Common.RIDER_DESTINATION_STRING,selectPlaceEvent.getDestinationString());
+                    notification.put(Common.RIDER_DESTINATION_STRING,selectPlaceEvent.getAdress());
                     notification.put(Common.RIDER_DESTINATION,new StringBuilder("").append(selectPlaceEvent.getDestination().latitude)
                             .append(",").append(selectPlaceEvent.getDestination().longitude).toString());
                     FCMSendData fcmSendData=new FCMSendData(tokenModel.getToken(),notification);

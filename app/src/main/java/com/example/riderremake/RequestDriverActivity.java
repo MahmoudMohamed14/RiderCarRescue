@@ -15,16 +15,25 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.renderscript.RenderScript;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.riderremake.EventBus.DeclineRequestFromDriver;
 import com.example.riderremake.EventBus.SelectPlaceEvent;
+import com.example.riderremake.EventBus.ShowNotificationFinishTrip;
+import com.example.riderremake.Model.DeclineRequestAndRemoveTripFromDriver;
+import com.example.riderremake.Model.DriverAcceptTripEvent;
+import com.example.riderremake.Model.DriverCompleteTripEvent;
+import com.example.riderremake.Model.TripPlanModel;
 import com.example.riderremake.Services.UserUtils;
 import com.example.riderremake.remote.IgoogleApi;
 import com.example.riderremake.remote.RetrofitClient;
@@ -49,6 +58,11 @@ import com.google.android.gms.maps.model.SquareCap;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.gson.JsonObject;
 import com.google.maps.android.ui.IconGenerator;
 
 import org.greenrobot.eventbus.EventBus;
@@ -58,6 +72,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CancellationException;
 
 import butterknife.BindView;
@@ -70,6 +85,8 @@ import io.reactivex.schedulers.Schedulers;
 
 import static com.example.riderremake.R2.attr.drawPath;
 import static com.example.riderremake.R2.attr.floatingActionButtonStyle;
+import static com.example.riderremake.R2.attr.icon;
+import static com.example.riderremake.R2.attr.ttcIndex;
 
 public class RequestDriverActivity extends FragmentActivity implements OnMapReadyCallback {
     //effect
@@ -94,10 +111,23 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     Button btn_confirm_pickup;
     @BindView(R.id.txt_address_pickup)
    TextView txt_address_pickup;
+    @BindView(R.id.layout_driver_info)
+    CardView layout_driver_info;
+    @BindView(R.id.txt_driver_name)
+    TextView txt_driver_name;
+    @BindView(R.id.img_driver)
+    ImageView img_driver;
     @BindView(R.id.fill_maps)
     View fill_map;
     private Object Context;
     private DriverGeomodel lastDriverCall;
+    private String driverOldPosition="";
+    private Handler handler;
+    private float v;
+    private double lat,lng;
+    private int next,index;
+    private LatLng start,end;
+
 
     @OnClick(R.id.btn_confirm_uber)
     void onConfirmUber(){
@@ -270,13 +300,292 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
 
         if(EventBus.getDefault().hasSubscriberForEvent(SelectPlaceEvent.class))
             EventBus.getDefault().removeStickyEvent(SelectPlaceEvent.class);
-
+        if(EventBus.getDefault().hasSubscriberForEvent(DriverCompleteTripEvent.class))
+            EventBus.getDefault().removeStickyEvent(DriverCompleteTripEvent.class);
         if(EventBus.getDefault().hasSubscriberForEvent(DeclineRequestFromDriver.class))
             EventBus.getDefault().removeStickyEvent(DeclineRequestFromDriver.class);
+        if(EventBus.getDefault().hasSubscriberForEvent(DeclineRequestAndRemoveTripFromDriver.class))
+            EventBus.getDefault().removeStickyEvent(DeclineRequestAndRemoveTripFromDriver.class);
+        if(EventBus.getDefault().hasSubscriberForEvent(DriverAcceptTripEvent.class))
+            EventBus.getDefault().removeStickyEvent(DriverAcceptTripEvent.class);
+
         EventBus.getDefault().unregister(this);
 
 
     }
+    @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
+    public  void onDriverCompleteTripEvent(DriverCompleteTripEvent event){
+
+
+        Common.ShowNotfication(this, new Random().nextInt(),
+                "Complete Trip",
+                "you trip"+event.getKeytrip()+"has been complete", null);
+        finish();
+    }
+    @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
+    public  void onDriverAcceptEvent(DriverAcceptTripEvent event)
+    {
+        FirebaseDatabase.getInstance().getReference(Common.Trips).child(event.getTripId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){
+                    TripPlanModel tripPlanModel=snapshot.getValue(TripPlanModel.class);
+                    mMap.clear();
+                    fill_map.setVisibility(View.GONE);
+                    if(animator!=null)animator.end();
+                    CameraPosition cameraPosition=new CameraPosition.Builder()
+                            .target(mMap.getCameraPosition().target)
+                            .tilt(0f)
+                            .zoom(mMap.getCameraPosition().zoom)
+                            .build();
+                    mMap.moveCamera( CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    //get route
+                    String driverLocation= new StringBuilder()
+                            .append(tripPlanModel.getCurrentLat())
+                            .append(",")
+                            .append(tripPlanModel.getCurrentLog())
+                            .toString();
+                    // Request Api
+                    compositeDisposable.add(igoogleApi.getDirections("driving","less_driving"
+                            ,tripPlanModel.getOrigin()
+                            ,driverLocation
+                            ,getString(R.string.google_api_key))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Consumer<String>() {
+                                @Override
+                                public void accept(String returnRusult) throws Exception {
+                                  PolylineOptions blackpolylineOptions=null;
+                                  List<LatLng>polylinelist=null;
+                                 Polyline blackpolyline=null;
+
+                                    try {
+                                        JSONObject jsonObject= new JSONObject(returnRusult);
+                                        JSONArray jsonArray=jsonObject.getJSONArray("routes");
+                                        for(int i=0 ;i<jsonArray.length();i++){
+                                            JSONObject route=jsonArray.getJSONObject(i);
+                                            JSONObject poly=route.getJSONObject("overview_polyline");
+                                            String polyline=poly.getString("points");
+                                            polylinelist=Common.decodePoly(polyline);
+
+                                        }
+                                        //moving
+
+
+                                        blaclpolylineoption=new PolylineOptions();
+                                        blaclpolylineoption.color(Color.BLACK);
+                                        blaclpolylineoption.width(5);
+                                        blaclpolylineoption.startCap(new SquareCap());
+                                        blaclpolylineoption.jointType(JointType.ROUND);
+                                        blaclpolylineoption.addAll(polylinelist);
+                                        balckpolyline=mMap.addPolyline( blaclpolylineoption);
+                                        //animator
+                                        JSONObject object=jsonArray.getJSONObject(0);
+                                        JSONArray legs=object.getJSONArray("legs");
+                                        JSONObject legsobject=legs.getJSONObject(0);
+                                        JSONObject time=legsobject.getJSONObject("duration");
+                                        String duration=time.getString("text");
+                                        JSONObject distanceEstimate =legsobject.getJSONObject("distance");
+                                        String distance=distanceEstimate.getString("text");
+                                        LatLng origin=new LatLng(Double.parseDouble(tripPlanModel.getOrigin().split(",")[0])
+                                                ,Double.parseDouble(tripPlanModel.getOrigin().split(",")[1]));
+                                        LatLng destination=new LatLng(tripPlanModel.getCurrentLat(),tripPlanModel.getCurrentLog());
+                                        LatLngBounds latLngBounds=new LatLngBounds.Builder()
+                                                .include(origin)
+                                                .include(destination)
+                                                .build();
+                                        //add car icon for origin
+                                        addPickerMarkerWithDuration(duration,origin);
+                                       addDriverMarker(destination);
+
+
+
+
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,160));
+                                        mMap.moveCamera(CameraUpdateFactory.zoomTo(  mMap.getCameraPosition().zoom-1));
+                                      initDriverFromMoving(event.getTripId(),tripPlanModel);
+
+
+             //      if(!tripPlanModel.getDriverInfo().getImage().equals("default")) {
+//                        Glide.with(RequestDriverActivity.this).load(tripPlanModel.getDriverInfo().getImage()).into(img_driver);
+//                    }
+                                        // txt_driver_name.setText(tripPlanModel.getDriverInfo().getName());
+                                        confirm_pickup_layout.setVisibility(View.GONE);
+                                        confirm_uber_layout.setVisibility(View.GONE);
+                                        layout_driver_info.setVisibility(View.VISIBLE);
+
+
+
+
+                                    } catch (Exception e){
+                                        Toast.makeText(RequestDriverActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+
+
+
+                                    }
+
+                                }
+
+
+                            }));
+
+
+
+                }else{
+                    Snackbar.make(main_layout,getString(R.string.trip_not_found),Snackbar.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Snackbar.make(main_layout,error.getMessage(),Snackbar.LENGTH_LONG).show();
+
+            }
+        });
+
+
+
+    }
+
+    private void initDriverFromMoving(String tripId, TripPlanModel tripPlanModel) {
+      driverOldPosition= new StringBuilder()
+                .append(tripPlanModel.getCurrentLat())
+                .append(",")
+                .append(tripPlanModel.getCurrentLog())
+                .toString();
+      FirebaseDatabase.getInstance().getReference(Common.Trips).child(tripId).addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(@NonNull DataSnapshot snapshot) {
+              if(snapshot.exists()) {
+                  TripPlanModel newData = snapshot.getValue(TripPlanModel.class);
+                  String driverNewLocation = new StringBuilder()
+                          .append(newData.getCurrentLat())
+                          .append(",")
+                          .append(newData.getCurrentLog())
+                          .toString();
+                  if (!driverOldPosition.equals(driverNewLocation)) {
+                      moveMarkerAnimatin(destinationMarker, driverOldPosition, driverNewLocation);
+                  }
+              }
+          }
+
+          @Override
+          public void onCancelled(@NonNull DatabaseError error) {
+              Snackbar.make(main_layout,error.getMessage(),Snackbar.LENGTH_LONG).show();
+          }
+      });
+    }
+
+    private void moveMarkerAnimatin(Marker marker, String from, String to) {
+        compositeDisposable.add(igoogleApi.getDirections("driving","less_driving",from,to,
+                getString(R.string.google_api_key))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String returnRusult) throws Exception {
+                        Log.d("API_RESULT",returnRusult);
+
+                        try {
+                            JSONObject jsonObject= new JSONObject(returnRusult);
+                            JSONArray jsonArray=jsonObject.getJSONArray("routes");
+                            for(int i=0 ;i<jsonArray.length();i++){
+                                JSONObject route=jsonArray.getJSONObject(i);
+                                JSONObject poly=route.getJSONObject("overview_polyline");
+                                String polyline=poly.getString("points");
+                                 polylinelist=Common.decodePoly(polyline);
+
+                            }
+                            //moving
+                            blaclpolylineoption=new PolylineOptions();
+                            blaclpolylineoption.color(Color.BLACK);
+                            blaclpolylineoption.width(5);
+                            blaclpolylineoption.startCap(new SquareCap());
+                            blaclpolylineoption.jointType(JointType.ROUND);
+                            blaclpolylineoption.addAll(polylinelist);
+                            balckpolyline=mMap.addPolyline( blaclpolylineoption);
+                            //animator
+                            JSONObject object=jsonArray.getJSONObject(0);
+                            JSONArray legs=object.getJSONArray("legs");
+                            JSONObject legsobject=legs.getJSONObject(0);
+                            JSONObject time=legsobject.getJSONObject("duration");
+                            String duration=time.getString("text");
+                            JSONObject distanceEstimate =legsobject.getJSONObject("distance");
+                            String distance=distanceEstimate.getString("text");
+
+                         Bitmap bitmap= Common.createIconWithDuration(RequestDriverActivity.this,duration);
+                         originMarker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+                           handler= new Handler();
+                            //run handler
+                          next=1;
+                          index=-1;
+                          handler.postDelayed(new Runnable() {
+                              @Override
+                              public void run() {
+                                  if(index<polylinelist.size()-2){
+                                      index++;
+                                      next=index+1;
+                                      start=polylinelist.get(index);
+                                      end=polylinelist.get(next);
+                                  }
+                                  ValueAnimator valueAnimator = ValueAnimator.ofInt(0, 100);
+                                  valueAnimator.setDuration(1100);
+
+                                  valueAnimator.setInterpolator(new LinearInterpolator());
+                                  valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                      @Override
+                                      public void onAnimationUpdate(ValueAnimator animation) {
+                                          v=animation.getAnimatedFraction();
+                                          lat=v*end.longitude+(1-v)*start.longitude;
+                                          lng=v*end.latitude+(1-v)*start.latitude;
+                                          LatLng newPos=new LatLng(lat,lng);
+                                          marker.setPosition(newPos);
+                                          marker.setAnchor(0.5f,.5f);
+                                          marker.setRotation(Common.getBearing(start,newPos));
+                                          mMap.moveCamera(CameraUpdateFactory.newLatLng(newPos));
+
+
+                                      }
+                                  });
+                                  valueAnimator.start();
+                                  if(index<polylinelist.size()-2){
+                                      handler.postDelayed(this,1500);
+
+                                  }
+                                  else if(index<polylinelist.size()-1){
+
+                                  }
+                              }
+                          },1500);
+                          driverOldPosition=to;//set driver new position
+
+
+                        } catch (Exception e){
+                            Snackbar.make(main_layout, e.getMessage(), Snackbar.LENGTH_SHORT).show();
+
+
+
+                        }
+
+                    }
+                },throwable -> {
+                    if(throwable!=null){
+                        Snackbar.make(main_layout, throwable.getMessage(), Snackbar.LENGTH_SHORT).show();
+                    }
+                }));
+    }
+
+    private void addDriverMarker(LatLng destination) {
+        destinationMarker=mMap.addMarker(new MarkerOptions().position(destination).flat(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+    }
+
+    private void addPickerMarkerWithDuration(String duration, LatLng origin) {
+        Bitmap icon=Common.createIconWithDuration(this,duration);
+        originMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(origin));
+
+    }
+
     @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
     public  void onSelectPlaceEvent(SelectPlaceEvent event){
         selectPlaceEvent=event;
@@ -287,6 +596,15 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
             Common.driversFound.get(lastDriverCall.getKey()).setDecline(true);
             //driver cancel request,find new driver
             findNearbyDriver(selectPlaceEvent);
+        }
+
+    }
+    @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
+    public  void onDeclineRequestAndRemoveTripEvent(DeclineRequestAndRemoveTripFromDriver event){
+        if(lastDriverCall!=null){
+            Common.driversFound.get(lastDriverCall.getKey()).setDecline(true);
+            //driver cancel request,finish this action
+           finish();
         }
 
     }
@@ -420,16 +738,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
 
                     }
 
-                    private void addDestinatinMarker(String end_address) {
-                        View view= getLayoutInflater().inflate(R.layout.destination_ifo_windows,null);
-                        TextView tex_destination=(  TextView)view.findViewById(R.id.tex_destination);
-                        tex_destination.setText(Common.formatAdress(end_address));
-                        IconGenerator generator=new IconGenerator(RequestDriverActivity.this);
-                        generator.setContentView(view);
-                        generator.setBackground(new ColorDrawable(Color.TRANSPARENT));
-                        Bitmap icon=generator.makeIcon();
-                        destinationMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(selectPlaceEvent.getDestination()));
-                    }
+
                 }));
     }
 
@@ -446,5 +755,15 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
         Bitmap icon=generator.makeIcon();
         originMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(selectPlaceEvent.getOrigin()));
 
+    }
+    private void addDestinatinMarker(String end_address) {
+        View view= getLayoutInflater().inflate(R.layout.destination_ifo_windows,null);
+        TextView tex_destination=(  TextView)view.findViewById(R.id.tex_destination);
+        tex_destination.setText(Common.formatAdress(end_address));
+        IconGenerator generator=new IconGenerator(RequestDriverActivity.this);
+        generator.setContentView(view);
+        generator.setBackground(new ColorDrawable(Color.TRANSPARENT));
+        Bitmap icon=generator.makeIcon();
+        destinationMarker=mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(selectPlaceEvent.getDestination()));
     }
 }

@@ -7,25 +7,27 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.TextView;
 
-import androidx.collection.ArraySet;
-import androidx.collection.CircularArray;
 import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.maps.android.ui.IconGenerator;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
 @SuppressWarnings("unchecked")
 public class Common {
     public static final String DRIVER_LOCATION_REFERANCE ="DriverLocation" ;
@@ -44,6 +46,12 @@ public class Common {
     public static final String TYPE_CAR="TYPE_CAR";
     public static Map<String,DriverGeomodel> driversFound=new HashMap<>();
     public  static  final  String  DRIVER__INFO="DriverInfo";
+    public static final String REQUEST_DRIVER_ACCEPT ="Accept" ;
+    public static final String REQUEST_DRIVER_DECLINE_AND_REMOVE_TRIP ="DeclineAndRemoveTrip" ;
+    public static final String RIDER_COMPLETE_TRIP ="RiderCompleteTrip" ;
+    public static final String TRIP_KEY ="TripKey" ;
+    public static final String DRIVER_KEY ="DriverKey";
+    public static String Trips="Trips";
     public static HashMap<String, Marker> markerList=new HashMap<>();
     public static HashMap<String,AnimationModel> driverLocationsSubscribe= new HashMap<String,AnimationModel>();
 
@@ -51,13 +59,13 @@ public class Common {
         PendingIntent pendingIntent=null;
         if(intent!=null)
             pendingIntent=PendingIntent.getActivity(context,id,intent,PendingIntent.FLAG_CANCEL_CURRENT);
-        String NOTIFICATION_CHANNEL_ID="edmt_dev_uber_remake";
+        String NOTIFICATION_CHANNEL_ID="car_rescue_remake";
         NotificationManager notificationManager=(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
             NotificationChannel notificationChannel=new NotificationChannel(NOTIFICATION_CHANNEL_ID,
-                    "UBER Remake",NotificationManager.IMPORTANCE_HIGH);
-            notificationChannel.setDescription("Uber Remake");
+                    "CARRESCUE Remake",NotificationManager.IMPORTANCE_HIGH);
+            notificationChannel.setDescription("CARRESCUE Remake");
             notificationChannel.enableLights(true);
             notificationChannel.setLightColor(Color.RED);
             notificationChannel.setVibrationPattern(new long[]{0,1000,500,1000});
@@ -169,5 +177,20 @@ public class Common {
         va.start();
         return  va;
         
+    }
+
+    public static Bitmap createIconWithDuration(Context context, String duration) {
+        View view= LayoutInflater.from(context).inflate(R.layout.pickup_info_with_duratio_windows,null);
+        TextView txt_time=view.findViewById(R.id.txt_duration);
+        txt_time.setText(Common.getNumberFromText(duration));
+        IconGenerator generator=new IconGenerator(context);
+        generator.setContentView(view);
+        generator.setBackground(new ColorDrawable(Color.TRANSPARENT));
+        return generator.makeIcon();
+
+    }
+
+    private static String getNumberFromText(String duration) {
+        return duration.substring(0,duration.indexOf(" "));
     }
 }

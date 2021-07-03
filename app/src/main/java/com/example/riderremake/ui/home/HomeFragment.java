@@ -43,6 +43,7 @@ import com.example.riderremake.Common;
 import com.example.riderremake.DriverGeomodel;
 import com.example.riderremake.DriverInfoModel;
 import com.example.riderremake.EventBus.SelectPlaceEvent;
+import com.example.riderremake.EventBus.ShowNotificationFinishTrip;
 import com.example.riderremake.GeoQueryModel;
 import com.example.riderremake.MainActivity;
 import com.example.riderremake.MechanicInfoModel;
@@ -51,6 +52,7 @@ import com.example.riderremake.RequestDriverActivity;
 import com.example.riderremake.RequestMechanicandWinchDriver;
 import com.example.riderremake.RiderHomeActivity;
 import com.example.riderremake.RiderInfo;
+import com.example.riderremake.Utils.LocationUtils;
 import com.example.riderremake.WinchInfoModel;
 import com.example.riderremake.remote.IgoogleApi;
 import com.example.riderremake.remote.RetrofitClient;
@@ -101,6 +103,8 @@ import com.karumi.dexter.listener.single.PermissionListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -110,6 +114,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import javax.net.ssl.SNIHostName;
 
@@ -150,6 +155,8 @@ private int pointer;
     LinearLayout liner_type_car ;
     @BindView(R.id.edit_type_car)
     EditText edit_type_car ;
+    private boolean isnextLaunch=false;
+
     @OnClick(R.id.pickup_service)
     void onPickupService() {
 
@@ -249,7 +256,34 @@ private int pointer;
     @Override
     public void onStop() {
         compositeDisposable.clear();
+
         super.onStop();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(isnextLaunch){
+            if(pointer==1){
+                loadAvailableDrivers();
+
+            }
+            else if(pointer==2){
+                loadAvailableWinch();
+            }else if(pointer==3){
+                loadAvailableMechanic();
+            }
+        }else{
+            isnextLaunch=true;
+        }
     }
 
     @Override
@@ -273,63 +307,7 @@ private int pointer;
 
         return root;
     }
-//    private void AlertDialog() {
-//
-//
-//
-//
-//        car_service.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                buildLocationRequest();
-//                buildLocationCallbackDrivers();
-//                updateLocation();
-//                loadAvailableDrivers();
-//                btn_pickup_service.setVisibility(View.GONE);
-//                main_search.setVisibility(View.VISIBLE);
-//                linear_choose_service.setVisibility(View.GONE);
-//                linear_choose_place.setVisibility(View.VISIBLE);
-//                txt_welcome.setVisibility(View.VISIBLE);
-//
-//            }
-//        });
-//
-//mechanic_service.setOnClickListener(new View.OnClickListener() {
-//    @Override
-//    public void onClick(View v) {
-//        buildLocationRequest();
-//        buildLocationCallbackMecanic();
-//        updateLocation();
-//        loadAvailableMechanic();
-//        main_search.setVisibility(View.GONE);
-//        btn_pickup_service.setVisibility(View.VISIBLE);
-//        linear_choose_service.setVisibility(View.GONE);
-//        linear_choose_place.setVisibility(View.GONE);
-//        txt_welcome.setVisibility(View.VISIBLE);
-//
-//    }
-//});
-//
-//        winch_service.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                buildLocationRequest();
-//                buildLocationCallbackWinch();
-//                updateLocation();
-//                loadAvailableWinch();
-//                main_search.setVisibility(View.GONE);
-//                btn_pickup_service.setVisibility(View.VISIBLE);
-//                linear_choose_service.setVisibility(View.GONE);
-//                linear_choose_place.setVisibility(View.GONE);
-//                txt_welcome.setVisibility(View.VISIBLE);
-//            }
-//        });
-//
-//
-//    }
-//
-    //search
+
     private void initView(View root) {
         ButterKnife.bind(this, root);
         Common.setWelcomeMessage(txt_welcome);
@@ -364,7 +342,7 @@ private int pointer;
                         startActivity(new Intent(getContext(), RequestDriverActivity.class));
                         if(pointer==1) {
 
-                            EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, destination,pointer));
+                            EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, destination,place.getAddress(),pointer));
                         } else if (pointer==2) {
                             String type_car=edit_type_car.getText().toString();
                             if (type_car.isEmpty()) {
@@ -373,7 +351,7 @@ private int pointer;
                                 return;
                             }
 
-                                EventBus.getDefault().postSticky(new SelectPlaceEvent(origin,destination, type_car,pointer));
+                                EventBus.getDefault().postSticky(new SelectPlaceEvent(origin,destination,place.getAddress(), type_car,pointer));
                         }
 
                     }
@@ -482,11 +460,12 @@ private int pointer;
                     if (fristtime) {
                         previousLocation = currentLocation = locationResult.getLastLocation();
                         fristtime = false;
-                        setRestrictplaceInCountry(locationResult.getLastLocation());
+
                     } else {
                         previousLocation = currentLocation;
                         currentLocation = locationResult.getLastLocation();
                     }
+                    setRestrictplaceInCountry(locationResult.getLastLocation());
                     if (previousLocation.distanceTo(currentLocation) / 1000 <= LIMIT_RANGE) ;
                     loadAvailableWinch();
 
@@ -522,37 +501,7 @@ private int pointer;
 
 
     }
-    /*
 
-
-    public void search(){
-      //  btngo=findViewById(R.id.btngo);
-       // editolace=findViewById(R.id.edtplace);
-        btngo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String location=editolace.getText().toString();
-                List<Address>addressList=null;
-                if(location!=null||!location.equals(""));
-                {
-                    Geocoder geocoder=new Geocoder(getContext());
-                    try {
-                        addressList=geocoder.getFromLocationName(location,5);
-
-                    } catch (IOException e) {
-                        Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                    Address address=addressList.get(0);
-                    LatLng latLng= new LatLng(address.getLatitude(),address.getLongitude());
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(location));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f));
-
-                }
-
-            }
-        });
-    }
-    */
     private void loadAvailableDrivers() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -569,13 +518,9 @@ private int pointer;
             @Override
             public void onSuccess(final Location location) {
                 //back all driver in city
-                Geocoder geocoder=new Geocoder(getContext(), Locale.getDefault());
-                List<Address> addressList;
-                try {
-                    addressList=geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
-                    if(addressList.size()>0)
+                cityName= LocationUtils.getAddressFromLocation(getContext(),location);
 
-                    cityName = addressList.get(0).getLocality();
+
                     if(!TextUtils.isEmpty(cityName)) {
                         //query
                         DatabaseReference driverlocationref = FirebaseDatabase.getInstance().getReference(Common.DRIVER_LOCATION_REFERANCE)
@@ -656,10 +601,7 @@ private int pointer;
                     }
                     else
                         Snackbar.make(getView(),"name city is empty",Snackbar.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getContext(), e.getMessage() + "Eror Homefragment line 153", Toast.LENGTH_SHORT).show();
-                }
+
 
             }
         });
@@ -680,13 +622,9 @@ private int pointer;
             @Override
             public void onSuccess(final Location location) {
                 //back all driver in city
-                Geocoder geocoder=new Geocoder(getContext(), Locale.getDefault());
-                List<Address> addressList;
-                try {
-                    addressList=geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
-                    if(addressList.size()>0)
+                cityName= LocationUtils.getAddressFromLocation(getContext(),location);
 
-                        cityName = addressList.get(0).getLocality();
+
                     if(!TextUtils.isEmpty(cityName)) {
                         //query
                         DatabaseReference driverlocationref = FirebaseDatabase.getInstance().getReference("MechanicLocation")
@@ -767,10 +705,7 @@ private int pointer;
                     }
                     else
                         Snackbar.make(getView(),"name city is empty",Snackbar.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getContext(), e.getMessage() + "Eror Homefragment line 153", Toast.LENGTH_SHORT).show();
-                }
+
 
             }
         });
@@ -791,13 +726,7 @@ private int pointer;
             @Override
             public void onSuccess(final Location location) {
                 //back all driver in city
-                Geocoder geocoder=new Geocoder(getContext(), Locale.getDefault());
-                List<Address> addressList;
-                try {
-                    addressList=geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
-                    if(addressList.size()>0)
-
-                        cityName = addressList.get(0).getLocality();
+                cityName= LocationUtils.getAddressFromLocation(getContext(),location);
                     if(!TextUtils.isEmpty(cityName)) {
                         //query
                         DatabaseReference driverlocationref = FirebaseDatabase.getInstance().getReference("RescueWinchLocation")
@@ -811,8 +740,8 @@ private int pointer;
                             @Override
                             public void onKeyEntered(String key, GeoLocation location) {
                                 // Common.driversFound.add(new DriverGeomodel(key, location));
-                                if(!Common.driversFound.containsKey(key))
-                                    Common.driversFound.put(key,new DriverGeomodel(key,location));//add if not exit
+                                if (!Common.driversFound.containsKey(key))
+                                    Common.driversFound.put(key, new DriverGeomodel(key, location));//add if not exit
                             }
 
                             @Override
@@ -878,10 +807,7 @@ private int pointer;
                     }
                     else
                         Snackbar.make(getView(),"name city is empty",Snackbar.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getContext(), e.getMessage() + "Eror Homefragment line 153", Toast.LENGTH_SHORT).show();
-                }
+
 
             }
         });
@@ -1021,28 +947,6 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                 });
     }
 
-//    private void findDriverById(final DriverGeomodel driverGeomodel) {
-//        FirebaseDatabase.getInstance().getReference(Common.DRIVER__INFO)
-//                .child(driverGeomodel.getKey())
-//                .addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        if(snapshot.hasChildren()){
-//                            driverGeomodel.setDriverInfoModel(snapshot.getValue(DriverInfoModel.class));
-//
-//
-//                            Common.driversFound.get(driverGeomodel.getKey()).setDriverInfoModel(snapshot.getValue(DriverInfoModel.class));
-//                            ifirebaseDriverInfoListener.onDriverInfoLoadSuccess(driverGeomodel);
-//                        }else
-//                            ifirebaseFialedListener.onFirebaseLoadFialed("not find driver key");
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//                        ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
-//                    }
-//                });
-//    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
