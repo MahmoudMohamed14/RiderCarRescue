@@ -190,7 +190,7 @@ public class Common {
 
     }
 
-    private static String getNumberFromText(String duration) {
+    public static String getNumberFromText(String duration) {
         return duration.substring(0,duration.indexOf(" "));
     }
 }

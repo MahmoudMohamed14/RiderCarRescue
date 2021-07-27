@@ -1,12 +1,12 @@
 package com.example.riderremake.Model;
 
 
-import com.example.riderremake.DriverInfoModel;
+import com.example.riderremake.DriverInfo;
 import com.example.riderremake.RiderInfo;
 
 public class TripPlanModel {
     private String rider,driver;
-    DriverInfoModel driverInfo;
+    DriverInfo driverInfo;
     RiderInfo riderModel;
     private String origin,originString;
     private String destination,destinationString;
@@ -34,11 +34,11 @@ public class TripPlanModel {
         this.driver = driver;
     }
 
-    public DriverInfoModel getDriverInfo() {
+    public DriverInfo getDriverInfo() {
         return driverInfo;
     }
 
-    public void setDriverInfo(DriverInfoModel driverInfo) {
+    public void setDriverInfo(DriverInfo driverInfo) {
         this.driverInfo = driverInfo;
     }
 

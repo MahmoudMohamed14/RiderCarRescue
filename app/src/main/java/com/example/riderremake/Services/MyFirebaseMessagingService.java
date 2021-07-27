@@ -43,8 +43,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
                 }
                 else if(dataReceive.get(Common.NOTI_TITLE).equals(Common.REQUEST_DRIVER_DECLINE_AND_REMOVE_TRIP)){
-
-                    EventBus.getDefault().postSticky(new DeclineRequestAndRemoveTripFromDriver());
+                    String driverkey=dataReceive.get(Common.DRIVER_KEY);
+                    EventBus.getDefault().postSticky(new DeclineRequestAndRemoveTripFromDriver(driverkey));
 
                 }
                 else if(dataReceive.get(Common.NOTI_TITLE).equals(Common.RIDER_COMPLETE_TRIP)){

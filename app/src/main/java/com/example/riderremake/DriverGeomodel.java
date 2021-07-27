@@ -5,7 +5,7 @@ import com.firebase.geofire.GeoLocation;
 public class DriverGeomodel {
     private String key;
     private GeoLocation geoLocation;
-    private DriverInfoModel driverInfoModel;
+    private DriverInfo driverInfo;
     private MechanicInfoModel mechanicInfoModel;
     private WinchInfoModel winchInfoModel;
     private boolean isDecline;
@@ -44,12 +44,12 @@ public class DriverGeomodel {
         this.mechanicInfoModel = mechanicInfoModel;
     }
 
-    public DriverInfoModel getDriverInfoModel() {
-        return driverInfoModel;
+    public DriverInfo getDriverInfo() {
+        return driverInfo;
     }
 
-    public void setDriverInfoModel(DriverInfoModel driverInfoModel) {
-        this.driverInfoModel = driverInfoModel;
+    public void setDriverInfo(DriverInfo driverInfo) {
+        this.driverInfo = driverInfo;
     }
 
     public String getKey() {

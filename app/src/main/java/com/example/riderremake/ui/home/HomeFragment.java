@@ -2,7 +2,6 @@ package com.example.riderremake.ui.home;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -10,12 +9,9 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
-import android.service.voice.VoiceInteractionSession;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,26 +28,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.example.riderremake.AnimationModel;
 import com.example.riderremake.CallBack.IfirebaseDriverInfoListener;
 import com.example.riderremake.CallBack.IfirebaseFialedListener;
 import com.example.riderremake.Common;
 import com.example.riderremake.DriverGeomodel;
-import com.example.riderremake.DriverInfoModel;
+import com.example.riderremake.DriverInfo;
 import com.example.riderremake.EventBus.SelectPlaceEvent;
-import com.example.riderremake.EventBus.ShowNotificationFinishTrip;
 import com.example.riderremake.GeoQueryModel;
-import com.example.riderremake.MainActivity;
 import com.example.riderremake.MechanicInfoModel;
 import com.example.riderremake.R;
 import com.example.riderremake.RequestDriverActivity;
-import com.example.riderremake.RequestMechanicandWinchDriver;
-import com.example.riderremake.RiderHomeActivity;
-import com.example.riderremake.RiderInfo;
 import com.example.riderremake.Utils.LocationUtils;
 import com.example.riderremake.WinchInfoModel;
 import com.example.riderremake.remote.IgoogleApi;
@@ -61,7 +50,6 @@ import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.common.api.internal.LifecycleCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -72,22 +60,18 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -103,31 +87,22 @@ import com.karumi.dexter.listener.single.PermissionListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
-
-import javax.net.ssl.SNIHostName;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Observable;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
-import io.reactivex.rxjava3.internal.schedulers.SingleScheduler;
 import io.reactivex.schedulers.Schedulers;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback, IfirebaseFialedListener, IfirebaseDriverInfoListener {
@@ -156,7 +131,7 @@ private int pointer;
     @BindView(R.id.edit_type_car)
     EditText edit_type_car ;
     private boolean isnextLaunch=false;
-
+    String type_car;
     @OnClick(R.id.pickup_service)
     void onPickupService() {
 
@@ -169,7 +144,7 @@ private int pointer;
             @Override
             public void onSuccess(Location location) {
                 LatLng origin = new LatLng(location.getLatitude(), location.getLongitude());
-                String type_car=edit_type_car.getText().toString();
+                type_car=edit_type_car.getText().toString();
                 if (type_car.isEmpty()) {
                     edit_type_car.setError("you must enter type your car ");
                   edit_type_car.requestFocus();
@@ -241,7 +216,7 @@ private int pointer;
     private LocationCallback callback;
     //load driver
     private double distance = 1.0;
-    private static final double LIMIT_RANGE = 10.0;//km
+    private static final double LIMIT_RANGE = 20.0;//km
     private Location previousLocation, currentLocation;// use to calculate distance
     private boolean fristtime = true;
     //listener
@@ -253,6 +228,8 @@ private int pointer;
     private IgoogleApi igoogleApi;
 
 
+
+
     @Override
     public void onStop() {
         compositeDisposable.clear();
@@ -260,11 +237,6 @@ private int pointer;
         super.onStop();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-    }
 
 
 
@@ -339,19 +311,22 @@ private int pointer;
                     public void onSuccess(Location location) {
                         LatLng origin =new LatLng(location.getLatitude(),location.getLongitude());
                         LatLng destination =new LatLng(place.getLatLng().latitude,place.getLatLng().longitude);
-                        startActivity(new Intent(getContext(), RequestDriverActivity.class));
+
                         if(pointer==1) {
 
                             EventBus.getDefault().postSticky(new SelectPlaceEvent(origin, destination,place.getAddress(),pointer));
+                            startActivity(new Intent(getContext(), RequestDriverActivity.class));
                         } else if (pointer==2) {
-                            String type_car=edit_type_car.getText().toString();
+                            type_car=edit_type_car.getText().toString();
                             if (type_car.isEmpty()) {
                                 edit_type_car.setError("you must enter type your car ");
                                 edit_type_car.requestFocus();
                                 return;
                             }
 
+
                                 EventBus.getDefault().postSticky(new SelectPlaceEvent(origin,destination,place.getAddress(), type_car,pointer));
+                            startActivity(new Intent(getContext(), RequestDriverActivity.class));
                         }
 
                     }
@@ -881,16 +856,16 @@ private int pointer;
     }
 
     private void findDriverById(final DriverGeomodel driverGeomodel) {
-        FirebaseDatabase.getInstance().getReference("DriverInfo")
+        FirebaseDatabase.getInstance().getReference(Common.DRIVER__INFO)
                 .child(driverGeomodel.getKey())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if(snapshot.hasChildren()){
-                            driverGeomodel.setDriverInfoModel(snapshot.getValue(DriverInfoModel.class));
+                            driverGeomodel.setDriverInfo(snapshot.getValue(DriverInfo.class));
 
 
-                            Common.driversFound.get(driverGeomodel.getKey()).setDriverInfoModel(snapshot.getValue(DriverInfoModel.class));
+                            Common.driversFound.get(driverGeomodel.getKey()).setDriverInfo(snapshot.getValue(DriverInfo.class));
                             ifirebaseDriverInfoListener.onDriverInfoLoadSuccess(driverGeomodel);
                         }else
                             ifirebaseFialedListener.onFirebaseLoadFialed("not find driver key");
@@ -903,7 +878,7 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                 });
     }
     private void findMechanicById(final DriverGeomodel driverGeomodel) {
-        FirebaseDatabase.getInstance().getReference("MechanicInfo")
+        FirebaseDatabase.getInstance().getReference(Common.DRIVER__INFO)
                 .child(driverGeomodel.getKey())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -925,7 +900,7 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                 });
     }
     private void findWinchById(final DriverGeomodel driverGeomodel) {
-        FirebaseDatabase.getInstance().getReference("RescueWinchInfo")
+        FirebaseDatabase.getInstance().getReference(Common.DRIVER__INFO)
                 .child(driverGeomodel.getKey())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -968,7 +943,8 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                     @Override
                     public boolean onMyLocationButtonClick() {
 
-                        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                                && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
                             return true;
                         }
@@ -1179,8 +1155,8 @@ ifirebaseFialedListener.onFirebaseLoadFialed(error.getMessage());
                             driverGeomodel.getGeoLocation().longitude))
                             .flat(true)
 
-                            .title(Common.buildName(driverGeomodel.getDriverInfoModel().getName()))
-                            .snippet(driverGeomodel.getDriverInfoModel().getPhone()).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))));
+                            .title(Common.buildName(driverGeomodel.getDriverInfo().getName()))
+                            .snippet(driverGeomodel.getDriverInfo().getPhone()).icon(BitmapDescriptorFactory.fromResource(R.drawable.car))));
         if(!TextUtils.isEmpty(cityName)){
             final DatabaseReference driverLocation=FirebaseDatabase.getInstance()
                     .getReference(Common.DRIVER_LOCATION_REFERANCE)

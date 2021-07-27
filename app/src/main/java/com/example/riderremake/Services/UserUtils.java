@@ -70,7 +70,7 @@ public class UserUtils {
                     notification.put(Common.NOTI_CONTANT,"This message respersent for request driver action ");
                     notification.put(Common.RiDER_KEY,FirebaseAuth.getInstance().getCurrentUser().getUid());
                     if (selectPlaceEvent.getCar()==null){
-                        selectPlaceEvent.setCar("0");
+                        selectPlaceEvent.setCar("bmw");
                     }
                     notification.put(Common.TYPE_CAR,selectPlaceEvent.getCar());
 

@@ -4,7 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -132,55 +135,59 @@ public class MainActivity extends AppCompatActivity {
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String email = useremail.getText().toString().trim();
-                final String password = userpassword.getText().toString().trim();
-                final String cpassword = confirmPassword.getText().toString().trim();
-                final String fname = firstName.getText().toString().trim();
-                final String lname = lastName.getText().toString().trim();
-                final String phone = userphone.getText().toString().trim();
+                if(!isConnected(MainActivity.this)){
+                    Toast.makeText(MainActivity.this, " Please check Internet Connection!", Toast.LENGTH_SHORT).show();
+
+                }else {
+                    final String email = useremail.getText().toString().trim();
+                    final String password = userpassword.getText().toString().trim();
+                    final String cpassword = confirmPassword.getText().toString().trim();
+                    final String fname = firstName.getText().toString().trim();
+                    final String lname = lastName.getText().toString().trim();
+                    final String phone = userphone.getText().toString().trim();
 
 
-                if (fname.isEmpty()) {
-                    firstName.setError("corent password");
-                    firstName.requestFocus();
-                    return;
-                }
-                if (lname.isEmpty()) {
-                    lastName.setError("corent password");
-                    lastName.requestFocus();
-                    return;
-                }
+                    if (fname.isEmpty()) {
+                        firstName.setError("corent password");
+                        firstName.requestFocus();
+                        return;
+                    }
+                    if (lname.isEmpty()) {
+                        lastName.setError("corent password");
+                        lastName.requestFocus();
+                        return;
+                    }
 
-                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    useremail.setError("enter vaild email");
-                    useremail.requestFocus();
-                    return;
-                }
-                if (email.isEmpty()) {
-                    useremail.setError("Requer");
-                    useremail.requestFocus();
-                    return;
-                }
-                if (password.isEmpty()) {
-                    userpassword.setError("Requred");
-                    userpassword.requestFocus();
-                    return;
-                }
-                if (!cpassword.equals(password)) {
-                    userpassword.setError("Not Match");
-                    userpassword.requestFocus();
-                    return;
-                }
-                if (password.length() < 6) {
-                    userpassword.setError("length must 6 Number");
-                    userpassword.requestFocus();
-                    return;
-                }
-                if (phone.isEmpty()) {
-                    userphone.setError("Requred");
-                    userphone.requestFocus();
-                    return;
-                }
+                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        useremail.setError("enter vaild email");
+                        useremail.requestFocus();
+                        return;
+                    }
+                    if (email.isEmpty()) {
+                        useremail.setError("Requer");
+                        useremail.requestFocus();
+                        return;
+                    }
+                    if (password.isEmpty()) {
+                        userpassword.setError("Requred");
+                        userpassword.requestFocus();
+                        return;
+                    }
+                    if (!cpassword.equals(password)) {
+                        userpassword.setError("Not Match");
+                        userpassword.requestFocus();
+                        return;
+                    }
+                    if (password.length() < 6) {
+                        userpassword.setError("length must 6 Number");
+                        userpassword.requestFocus();
+                        return;
+                    }
+                    if (phone.isEmpty()) {
+                        userphone.setError("Requred");
+                        userphone.requestFocus();
+                        return;
+                    }
                 /*
                 if(phone.length()<11){
                    userphone .setError("invalid phone");
@@ -189,41 +196,45 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                  */
-                if (!Patterns.PHONE.matcher(phone).matches()) {
-                    userphone.setError("invalid phone");
-                    userphone.requestFocus();
-                    return;
-                }
-                auth.createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    String id = auth.getCurrentUser().getUid();
-                                   // String token = FirebaseInstanceId.getInstance().getToken();
-                                   RiderInfo driverInfo = new RiderInfo(  /*name,email,phone,id,password,"0.0"   */);
-                                    HashMap<String,Object> hashMap=new HashMap<>();
-                                    hashMap.put("name",fname +" "+lname);
-                                    hashMap.put("id",id);
-                                    hashMap.put("email",email);
-                                    hashMap.put("password",password);
-                                    hashMap.put("phone",phone);
+                    if (!Patterns.PHONE.matcher(phone).matches()) {
+                        userphone.setError("invalid phone");
+                        userphone.requestFocus();
+                        return;
+                    }
+                    auth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        String id = auth.getCurrentUser().getUid();
+                                        // String token = FirebaseInstanceId.getInstance().getToken();
+                                        RiderInfo driverInfo = new RiderInfo(  /*name,email,phone,id,password,"0.0"   */);
+                                        HashMap<String,Object> hashMap=new HashMap<>();
+                                        hashMap.put("name",fname +" "+lname);
+                                        hashMap.put("id",id);
+                                        hashMap.put("email",email);
+                                        hashMap.put("password",password);
+                                        hashMap.put("phone",phone);
 
-                                    hashMap.put("image","default");
-                                    //hashMap.put("token",token);
+                                        hashMap.put("image","default");
+                                        //hashMap.put("token",token);
 
 
-                                    databaseReference.child(auth.getCurrentUser().getUid()).setValue(hashMap);
-                                    dialog.dismiss();
+                                        databaseReference.child(auth.getCurrentUser().getUid()).setValue(hashMap);
+                                        dialog.dismiss();
 
-                                } else {
-                                    // If sign in fails, display a message to the user.
-                                    Toast.makeText(MainActivity.this, "Sign Up Failed Failed", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        // If sign in fails, display a message to the user.
+                                        Toast.makeText(MainActivity.this, "Sign Up Failed Failed", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                    // ...
                                 }
+                            });
 
-                                // ...
-                            }
-                        });
+                }
+
+
 
 
                 /*
@@ -259,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
     private void showloginlayout() {
 
 
+
         final EditText username= findViewById(R.id.user_name);
         final EditText passwordd=findViewById(R.id.pass_word);
         TextView forgetpassword=findViewById(R.id.forget_password);
@@ -280,51 +292,69 @@ public class MainActivity extends AppCompatActivity {
         sinin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                String email = username.getText().toString().trim();
-                String password = passwordd.getText().toString().trim();
+                if(!isConnected(MainActivity.this)){
+                    Toast.makeText(MainActivity.this, " Please check Internet Connection!", Toast.LENGTH_SHORT).show();
 
-                if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-                    username.setError("enter vaild email");
-                    username.requestFocus();
-                    return;
-                }
-                if(email.isEmpty()){
-                    username .setError("Requer");
-                    username.requestFocus();
-                    return;
-                }
-                if(password.isEmpty()){
-                    passwordd .setError("Requred");
-                    passwordd.requestFocus();
-                    return;
-                }
+                }else {
+                    String email = username.getText().toString().trim();
+                    String password = passwordd.getText().toString().trim();
 
-                if(password.length()<6){
-                    passwordd .setError("length must 6 Number");
-                    passwordd.requestFocus();
-                    return;
-                }
-
-                auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-
-
-                           Intent intent=new Intent(MainActivity.this,RiderHomeActivity.class);
-                           startActivity(intent);
-                            finish();
-
-                        } else {
-                            Toast.makeText(v.getContext(), "failed password", Toast.LENGTH_LONG).show();
-                        }
+                    if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                        username.setError("enter vaild email");
+                        username.requestFocus();
+                        return;
                     }
-                });
+                    if(email.isEmpty()){
+                        username .setError("Requer");
+                        username.requestFocus();
+                        return;
+                    }
+                    if(password.isEmpty()){
+                        passwordd .setError("Requred");
+                        passwordd.requestFocus();
+                        return;
+                    }
+
+                    if(password.length()<6){
+                        passwordd .setError("length must 6 Number");
+                        passwordd.requestFocus();
+                        return;
+                    }
+
+                    auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+
+
+                                Intent intent=new Intent(MainActivity.this,RiderHomeActivity.class);
+                                startActivity(intent);
+                                finish();
+
+                            } else {
+                                Toast.makeText(v.getContext(), "failed password", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+                }
+
 
             }
         });
 
 
+
+    }
+
+    private boolean isConnected(MainActivity mainActivity) {
+        ConnectivityManager  connectivityManager= (ConnectivityManager) mainActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifiConn=connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo mobileConn=connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if((wifiConn!=null&&wifiConn.isConnected())||(mobileConn!=null&&mobileConn.isConnected())){
+            return true;
+        }else {
+            return false;
+        }
 
     }
 }

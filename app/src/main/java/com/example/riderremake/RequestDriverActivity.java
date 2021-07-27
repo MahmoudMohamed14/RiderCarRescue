@@ -22,6 +22,8 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,7 +73,9 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CancellationException;
 
@@ -115,10 +119,41 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     CardView layout_driver_info;
     @BindView(R.id.txt_driver_name)
     TextView txt_driver_name;
+    @BindView(R.id.price)
+    TextView txt_price;
     @BindView(R.id.img_driver)
     ImageView img_driver;
     @BindView(R.id.fill_maps)
     View fill_map;
+    @BindView(R.id.layout_rating)
+    LinearLayout layout_rating;
+    @BindView(R.id.rating_bar)
+    RatingBar rating_bar;
+    @BindView(R.id.btn_rating)
+    Button btn_rating;
+
+    public void setRating(){
+        btn_rating.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String value=String.valueOf(rating_bar.getRating()/5);
+
+                                Map<String,Object> update= new HashMap<>();
+                                update.put("rating",value);
+
+                                FirebaseDatabase.getInstance().getReference(Common.DRIVER__INFO).child(driverId).updateChildren(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+
+                                    }
+                                });
+
+                finish();
+            }
+        });
+
+    }
+
     private Object Context;
     private DriverGeomodel lastDriverCall;
     private String driverOldPosition="";
@@ -127,13 +162,27 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     private double lat,lng;
     private int next,index;
     private LatLng start,end;
+    String driverId;
 
 
     @OnClick(R.id.btn_confirm_uber)
     void onConfirmUber(){
-        confirm_pickup_layout.setVisibility(View.VISIBLE);//show layout pickup
-        confirm_uber_layout.setVisibility(View.GONE);//hide uber layout
-        setDatapickup();
+        if(selectPlaceEvent.getPointer()==1||selectPlaceEvent.getPointer()==2) {
+            confirm_pickup_layout.setVisibility(View.VISIBLE);//show layout pickup
+            confirm_uber_layout.setVisibility(View.GONE);//hide uber layout
+            setDatapickup();
+        }else if (selectPlaceEvent.getPointer()==3){
+            if(mMap==null)return;
+            if(selectPlaceEvent==null)return;
+            mMap.clear();
+            CameraPosition cameraPosition= new CameraPosition.Builder()
+                    .target(selectPlaceEvent
+                            .getOrigin()).tilt(45f).zoom(16).build();
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            //start animation
+            addmarkerwihthplusanimation();
+
+        }
     }
     @OnClick(R.id.btn_confirm_pickup)
     void onConfirmPickup(){
@@ -228,6 +277,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
             }
 
             if(foundDriver!=null){
+
                 UserUtils.sendRequestToDriver(this,main_layout,foundDriver,selectPlaceEvent);
 
                 lastDriverCall=foundDriver;
@@ -290,7 +340,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     protected void onStart() {
         super.onStart();
         if(! EventBus.getDefault().isRegistered(this))
-        EventBus.getDefault().register(this);
+             EventBus.getDefault().register(this);
     }
 
     @Override
@@ -315,12 +365,25 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
     }
     @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
     public  void onDriverCompleteTripEvent(DriverCompleteTripEvent event){
-
-
         Common.ShowNotfication(this, new Random().nextInt(),
                 "Complete Trip",
-                "you trip"+event.getKeytrip()+"has been complete", null);
-        finish();
+                "you trip has been complete", null);
+
+        mMap.clear();
+        setRating();
+        layout_driver_info.setVisibility(View.GONE);
+        layout_rating.setVisibility(View.VISIBLE);
+        confirm_pickup_layout.setVisibility(View.GONE);
+        confirm_uber_layout.setVisibility(View.GONE);
+        finding_your_ride_layout.setVisibility(View.GONE);
+
+
+
+
+
+
+
+
     }
     @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
     public  void onDriverAcceptEvent(DriverAcceptTripEvent event)
@@ -332,6 +395,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
                     TripPlanModel tripPlanModel=snapshot.getValue(TripPlanModel.class);
                     mMap.clear();
                     fill_map.setVisibility(View.GONE);
+                driverId  =  tripPlanModel.getDriver();
                     if(animator!=null)animator.end();
                     CameraPosition cameraPosition=new CameraPosition.Builder()
                             .target(mMap.getCameraPosition().target)
@@ -406,10 +470,11 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
                                       initDriverFromMoving(event.getTripId(),tripPlanModel);
 
 
-             //      if(!tripPlanModel.getDriverInfo().getImage().equals("default")) {
-//                        Glide.with(RequestDriverActivity.this).load(tripPlanModel.getDriverInfo().getImage()).into(img_driver);
-//                    }
-                                        // txt_driver_name.setText(tripPlanModel.getDriverInfo().getName());
+                  if(!tripPlanModel.getDriverInfo().getImage().equals("default")) {
+                       Glide.with(RequestDriverActivity.this).load(tripPlanModel.getDriverInfo().getImage()).into(img_driver);
+                   }
+
+                                         txt_driver_name.setText(tripPlanModel.getDriverInfo().getName());
                                         confirm_pickup_layout.setVisibility(View.GONE);
                                         confirm_uber_layout.setVisibility(View.GONE);
                                         layout_driver_info.setVisibility(View.VISIBLE);
@@ -600,12 +665,9 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
 
     }
     @Subscribe(sticky = true,threadMode = ThreadMode.MAIN)
-    public  void onDeclineRequestAndRemoveTripEvent(DeclineRequestAndRemoveTripFromDriver event){
-        if(lastDriverCall!=null){
-            Common.driversFound.get(lastDriverCall.getKey()).setDecline(true);
-            //driver cancel request,finish this action
-           finish();
-        }
+    public  void onDeclineRequestAndRemoveTrip(DeclineRequestAndRemoveTripFromDriver event){
+
+        finish();
 
     }
 
@@ -634,8 +696,9 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
             drawPath(selectPlaceEvent);
 
         }else if(selectPlaceEvent.getPointer()==3){
-            confirm_pickup_layout.setVisibility(View.VISIBLE);//show layout pickup
-            confirm_uber_layout.setVisibility(View.GONE);//hide uber layout
+            confirm_pickup_layout.setVisibility(View.GONE);//show layout pickup
+            confirm_uber_layout.setVisibility(View.VISIBLE);//hide uber layout
+            txt_price.setText(100+" L.G");
             setDatapickup();
         }
 
@@ -717,6 +780,23 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
                             JSONObject legsobject=legs.getJSONObject(0);
                             JSONObject time=legsobject.getJSONObject("duration");
                             String duration=time.getString("text");
+                            JSONObject distanceEstimate =legsobject.getJSONObject("distance");
+                            String distance=distanceEstimate.getString("text");
+                          double pricedelivery=2.5*Double.parseDouble(Common.getNumberFromText(distance))+.25*Double.parseDouble(Common.getNumberFromText(duration));
+                          double pricewinch=7*Double.parseDouble(Common.getNumberFromText(distance))+.75*Double.parseDouble(Common.getNumberFromText(duration));
+                            if(pricedelivery<10){
+                                txt_price.setText(10+" L.G");
+                            }else{
+                                if(selectPlaceEvent.getPointer()==1)
+                                {
+                                    txt_price.setText(pricedelivery+" L.G");
+                                }else{
+                                    txt_price.setText(pricewinch+" L.G");
+
+                                }
+
+                            }
+
                             String start_address=legsobject.getString("start_address");
                             String end_address=legsobject.getString("end_address");
                             addOriginMarker(duration,start_address);

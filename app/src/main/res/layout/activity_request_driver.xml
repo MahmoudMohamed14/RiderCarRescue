@@ -36,6 +36,7 @@
         <include layout="@layout/layout_confirm_pickup"/>
         <include layout="@layout/layout_finding_your_driver"/>
         <include layout="@layout/layout_driver_info"/>
+        <include layout="@layout/layout_driver_rating"/>
     </FrameLayout>
 
 </RelativeLayout>

@@ -8,6 +8,10 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +58,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import butterknife.BindView;
+import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
 @SuppressWarnings("unchecked")
 public class RiderHomeActivity extends AppCompatActivity {
@@ -70,19 +76,47 @@ public class RiderHomeActivity extends AppCompatActivity {
     private StorageReference mStorageRef;
     Uri uriprofile;
     AlertDialog waitdialog;
-
-    @Override
-    protected void onStart() {
-        super.onStart();
+    @BindView(R.id.seting_name)
+    ImageView setting_name;
+    @BindView(R.id.seting_phone)
+   ImageView setting_phone;
+    @BindView(R.id.linear_name)
+     LinearLayout linear_name;
+    @BindView(R.id.linear_phone)
+     LinearLayout linear_phone;
+    @BindView(R.id.edt_name)
+   EditText edit_name;
+    @BindView(R.id.edt_phone)
+   EditText edit_phone;
+    @BindView(R.id.btn_name)
+    Button btn_name;
+    @BindView(R.id.btn_phone)
+    Button btn_phone;
+    @OnClick(R.id.seting_name)
+    void onclickname(){
+        linear_name.setVisibility(View.VISIBLE);
+    }
+    @OnClick(R.id.seting_phone)
+    void onclickphone(){
+        linear_phone.setVisibility(View.VISIBLE);
 
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-
+    @OnClick(R.id.btn_name)
+    void onclickchangename(){
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("Riders");
+        String newname=edit_name.getText().toString();
+        HashMap<String,Object> hashMapname=new HashMap<>();
+        hashMapname.put("name",newname);
+        myRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(hashMapname).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                linear_name.setVisibility(View.GONE);
+            }
+        });
     }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +137,29 @@ public class RiderHomeActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         init();
+//
+
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("Riders");
+
+
+
+
+
+//        btn_name.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String newphone=edit_phone.getText().toString();
+//                HashMap<String,Object> hashMappone=new HashMap<>();
+//                hashMappone.put("phone",newphone);
+//                myRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(hashMappone).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        linear_phone.setVisibility(View.GONE);
+//                    }
+//                });
+//            }
+//        });
     }
 
     private void init() {
@@ -153,8 +210,13 @@ public class RiderHomeActivity extends AppCompatActivity {
         final TextView name=headerView.findViewById(R.id.name_profile);
         final TextView phone=headerView.findViewById(R.id.phone_profile);
         image_profile=headerView.findViewById(R.id.image_profile);
+
+
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("Riders");
+
+
+
         myRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
