@@ -1,5 +1,8 @@
-package com.example.riderremake;
+package com.example.riderremake.Model;
 
+import com.example.riderremake.Model.DriverInfo;
+import com.example.riderremake.Model.MechanicInfoModel;
+import com.example.riderremake.Model.WinchInfoModel;
 import com.firebase.geofire.GeoLocation;
 
 public class DriverGeomodel {

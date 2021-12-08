@@ -1,10 +1,7 @@
 package com.example.riderremake.remote;
 
-import com.example.riderremake.FCMResponse;
-
 import io.reactivex.Observable;
 import retrofit2.http.Body;
-import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 

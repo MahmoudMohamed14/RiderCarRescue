@@ -1,14 +1,14 @@
-package com.example.riderremake;
+package com.example.riderremake.Model;
 
-public class WinchInfoModel {
+public class MechanicInfoModel {
     private String email, phone ,id ,password,image,rating,name;
 
 
-    public WinchInfoModel(){
+    public MechanicInfoModel (){
 
     }
 
-    public WinchInfoModel(String name, String email, String phone, String id, String password, String image, String rating) {
+    public MechanicInfoModel(String name, String email, String phone, String id, String password, String image, String rating) {
         this.name = name;
         this.email = email;
         this.phone = phone;

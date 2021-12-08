@@ -2,13 +2,9 @@ package com.example.riderremake;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import android.Manifest;
 import android.animation.ValueAnimator;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -16,7 +12,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.renderscript.RenderScript;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -31,10 +26,10 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.riderremake.EventBus.DeclineRequestFromDriver;
 import com.example.riderremake.EventBus.SelectPlaceEvent;
-import com.example.riderremake.EventBus.ShowNotificationFinishTrip;
 import com.example.riderremake.Model.DeclineRequestAndRemoveTripFromDriver;
 import com.example.riderremake.Model.DriverAcceptTripEvent;
 import com.example.riderremake.Model.DriverCompleteTripEvent;
+import com.example.riderremake.Model.DriverGeomodel;
 import com.example.riderremake.Model.TripPlanModel;
 import com.example.riderremake.Services.UserUtils;
 import com.example.riderremake.remote.IgoogleApi;
@@ -53,18 +48,15 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.gson.JsonObject;
 import com.google.maps.android.ui.IconGenerator;
 
 import org.greenrobot.eventbus.EventBus;
@@ -77,7 +69,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CancellationException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -86,11 +77,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
-
-import static com.example.riderremake.R2.attr.drawPath;
-import static com.example.riderremake.R2.attr.floatingActionButtonStyle;
-import static com.example.riderremake.R2.attr.icon;
-import static com.example.riderremake.R2.attr.ttcIndex;
 
 public class RequestDriverActivity extends FragmentActivity implements OnMapReadyCallback {
     //effect

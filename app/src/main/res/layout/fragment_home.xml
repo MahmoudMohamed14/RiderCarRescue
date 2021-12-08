@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@android:color/white"
+        android:background="@color/white"
 
         >
         <LinearLayout
@@ -39,7 +39,7 @@
                 android:textSize="@dimen/_20sdp"
                 android:text="Choose Service"
                 android:layout_marginTop="@dimen/_10sdp"
-                android:textColor="@color/black"
+                android:textColor="@color/colorPrimary"
                 android:layout_marginLeft="@dimen/_2sdp"
 
                 />
@@ -107,7 +107,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/welcome"
-            android:textColor="@color/black"
+            android:textColor="@color/colorPrimary"
             android:textSize="@dimen/_20sdp"
             android:textStyle="bold"
 
@@ -120,7 +120,7 @@
                 android:layout_height="1dp"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
-                android:background="@android:color/darker_gray" />
+                android:background="@color/colorPrimary" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -133,12 +133,17 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/_19sdp"
                 android:text="type car:"
+                android:layout_marginRight="10dp"
                 android:layout_marginLeft="@dimen/_10sdp"
-                android:textColor="@color/black"/>
+                android:textColor="@color/colorPrimary"/>
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_40sdp"
                 android:hint="Enter type your car"
+                android:textColorHint="@color/colorPrimary"
+                android:textColor="@color/colorPrimary"
+
+
                 android:layout_marginRight="@dimen/_20sdp"
                 android:id="@+id/edit_type_car"
 
@@ -180,7 +185,8 @@
 
                 android:layout_gravity="center"
                 android:text="Pickup Service"
-                android:backgroundTint="@color/black"
+
+                android:background="@drawable/border_button"
 
 
                 android:textSize="@dimen/_20sdp"
@@ -209,7 +215,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/layout_choose_saved_place"
 
-                android:textColor="@color/black"
+                android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/_18sdp"
                 android:textStyle="bold"
                 android:layout_marginBottom="20dp"

@@ -1,9 +1,6 @@
 package com.example.riderremake.Model;
 
 
-import com.example.riderremake.DriverInfo;
-import com.example.riderremake.RiderInfo;
-
 public class TripPlanModel {
     private String rider,driver;
     DriverInfo driverInfo;

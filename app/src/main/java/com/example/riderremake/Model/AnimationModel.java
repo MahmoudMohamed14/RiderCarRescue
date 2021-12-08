@@ -1,7 +1,8 @@
-package com.example.riderremake;
+package com.example.riderremake.Model;
 
 import android.os.Handler;
 
+import com.example.riderremake.Model.GeoQueryModel;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;

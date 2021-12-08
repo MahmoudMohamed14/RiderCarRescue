@@ -1,22 +1,21 @@
-package com.example.riderremake;
+package com.example.riderremake.Model;
 
-public class RiderInfo {
-    private String name;
-    private String email, phone ,id ,password,image;
+public class WinchInfoModel {
+    private String email, phone ,id ,password,image,rating,name;
 
 
-    public RiderInfo() {
+    public WinchInfoModel(){
 
     }
 
-    public RiderInfo(String name, String email, String phone, String id, String password, String image) {
+    public WinchInfoModel(String name, String email, String phone, String id, String password, String image, String rating) {
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.id = id;
         this.password = password;
         this.image = image;
-
+        this.rating = rating;
     }
 
     public String getImage() {
@@ -27,7 +26,13 @@ public class RiderInfo {
         this.image = image;
     }
 
+    public String getRating() {
+        return rating;
+    }
 
+    public void setRating(String rating) {
+        this.rating = rating;
+    }
 
     public String getName() {
         return name;

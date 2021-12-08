@@ -1,4 +1,4 @@
-package com.example.riderremake;
+package com.example.riderremake.Model;
 
 import java.util.ArrayList;
 

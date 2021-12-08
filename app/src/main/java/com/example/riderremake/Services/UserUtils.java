@@ -7,11 +7,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.example.riderremake.Common;
-import com.example.riderremake.DriverGeomodel;
+import com.example.riderremake.Model.DriverGeomodel;
 import com.example.riderremake.EventBus.SelectPlaceEvent;
-import com.example.riderremake.FCMResponse;
+import com.example.riderremake.remote.FCMResponse;
 import com.example.riderremake.R;
-import com.example.riderremake.RequestDriverActivity;
 import com.example.riderremake.remote.FCMSendData;
 import com.example.riderremake.remote.IFCMService;
 import com.example.riderremake.remote.RetrofitFCMClient;
@@ -29,7 +28,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;

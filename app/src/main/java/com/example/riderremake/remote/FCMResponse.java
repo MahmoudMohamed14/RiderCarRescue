@@ -1,4 +1,4 @@
-package com.example.riderremake;
+package com.example.riderremake.remote;
 
 import java.util.List;
 

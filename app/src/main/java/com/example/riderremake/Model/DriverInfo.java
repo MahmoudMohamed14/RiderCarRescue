@@ -1,14 +1,14 @@
-package com.example.riderremake;
+package com.example.riderremake.Model;
 
-public class MechanicInfoModel {
+public class DriverInfo {
     private String email, phone ,id ,password,image,rating,name;
 
 
-    public MechanicInfoModel (){
+    public DriverInfo() {
 
     }
 
-    public MechanicInfoModel(String name, String email, String phone, String id, String password, String image, String rating) {
+    public DriverInfo(String name, String email, String phone, String id, String password, String image, String rating) {
         this.name = name;
         this.email = email;
         this.phone = phone;

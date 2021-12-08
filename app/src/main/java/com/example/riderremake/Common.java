@@ -18,6 +18,8 @@ import android.widget.TextView;
 
 import androidx.core.app.NotificationCompat;
 
+import com.example.riderremake.Model.AnimationModel;
+import com.example.riderremake.Model.DriverGeomodel;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.ui.IconGenerator;
@@ -44,7 +46,7 @@ public class Common {
     public static final String RIDER_DESTINATION_STRING ="DestinationLocationString" ;
     public static final String RIDER_DESTINATION = "DestinationLocation";
     public static final String TYPE_CAR="TYPE_CAR";
-    public static Map<String,DriverGeomodel> driversFound=new HashMap<>();
+    public static Map<String, DriverGeomodel> driversFound=new HashMap<>();
     public  static  final  String  DRIVER__INFO="DriverInfo";
     public static final String REQUEST_DRIVER_ACCEPT ="Accept" ;
     public static final String REQUEST_DRIVER_DECLINE_AND_REMOVE_TRIP ="DeclineAndRemoveTrip" ;
@@ -53,7 +55,7 @@ public class Common {
     public static final String DRIVER_KEY ="DriverKey";
     public static String Trips="Trips";
     public static HashMap<String, Marker> markerList=new HashMap<>();
-    public static HashMap<String,AnimationModel> driverLocationsSubscribe= new HashMap<String,AnimationModel>();
+    public static HashMap<String, AnimationModel> driverLocationsSubscribe= new HashMap<String,AnimationModel>();
 
     public static void ShowNotfication(Context context, int id, String title, String body, Intent intent) {
         PendingIntent pendingIntent=null;

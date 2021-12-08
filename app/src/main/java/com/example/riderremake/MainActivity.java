@@ -2,6 +2,7 @@ package com.example.riderremake;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -13,11 +14,13 @@ import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.riderremake.Model.RiderInfo;
 import com.example.riderremake.Services.UserUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -39,12 +42,15 @@ public class MainActivity extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference databaseReference;
 
+
+
+
     @Override
     protected void onStart() {
 
         super.onStart();
         if(FirebaseAuth.getInstance().getCurrentUser() != null) {
-            Intent intent=new Intent(MainActivity.this,RiderHomeActivity.class);
+            Intent intent=new Intent(MainActivity.this, RiderHomeActivity.class);
             startActivity(intent);
             finish();
             FirebaseInstanceId.getInstance().getInstanceId()
@@ -71,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+      getWindow().setStatusBarColor(ContextCompat.getColor(MainActivity.this, R.color.colorPrimary));
         database=FirebaseDatabase.getInstance();
         databaseReference=database.getReference(Common.RIDER__INFO);
         auth=FirebaseAuth.getInstance();
@@ -118,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void showregistyerlayout() {
         AlertDialog.Builder builder= new AlertDialog.Builder(this);
-        View view= LayoutInflater.from(this).inflate(R.layout.regester,null);
+        View view= LayoutInflater.from(this).inflate(R.layout.register,null);
         final EditText firstName = view.findViewById(R.id.firstName);
         final EditText  lastName = view.findViewById(R.id.lastName);
         final EditText useremail = view.findViewById(R.id.email);
@@ -286,7 +294,9 @@ public class MainActivity extends AppCompatActivity {
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 showregistyerlayout();
+                Intent intent=new Intent(MainActivity.this,Register.class);
+                startActivity(intent);
+                finish();
             }
         });
         sinin.setOnClickListener(new View.OnClickListener() {
