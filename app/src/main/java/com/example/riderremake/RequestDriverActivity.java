@@ -452,7 +452,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
 
 
                                         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,160));
-                                        mMap.moveCamera(CameraUpdateFactory.zoomTo(  mMap.getCameraPosition().zoom-1));
+                                        mMap.moveCamera(CameraUpdateFactory.zoomTo( 11f)); //mMap.getCameraPosition().zoom-1));
                                       initDriverFromMoving(event.getTripId(),tripPlanModel);
 
 
@@ -595,6 +595,7 @@ public class RequestDriverActivity extends FragmentActivity implements OnMapRead
                                           marker.setAnchor(0.5f,.5f);
                                           marker.setRotation(Common.getBearing(start,newPos));
                                           mMap.moveCamera(CameraUpdateFactory.newLatLng(newPos));
+
 
 
                                       }

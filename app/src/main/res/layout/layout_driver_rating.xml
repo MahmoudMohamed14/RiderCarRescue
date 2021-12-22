@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/rating_bar"
+
         android:layout_gravity="center"
         android:numStars="5"
         android:stepSize="1"
@@ -22,7 +23,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="submit"
-        android:backgroundTint="@color/blue"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/colorPrimary"
         android:layout_marginBottom="@dimen/_10sdp"
 
         />
